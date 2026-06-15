@@ -1,10 +1,22 @@
-import React from 'react';
+import { useEffect } from 'react';
 
 export default function App() {
+  useEffect(() => {
+    window.location.replace('/dashboard.html');
+  }, []);
+
   return (
-    <div>
-      <h1>React Dashboard Setup Successful!</h1>
-      <p>I can start migrating my HTML here.</p>
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',
+      fontFamily: 'Inter, sans-serif',
+      background: '#faf9f5',
+      color: '#6c6a64',
+      fontSize: '14px'
+    }}>
+      Loading Immunization Dashboard…
     </div>
   );
 }

@@ -1,0 +1,4113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UWIN + HMIS Immunization Dashboard — Uttarakhand FY 2026-27</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+
+
+        :root {
+            --bg: #faf9f5;
+            --surface: #efe9de;
+            --surface2: #efe9de;
+            --border: #e6dfd8;
+            --header-bg: rgba(250, 249, 245, 0.97);
+            --accent: #cc785c;
+            --accent2: #cc785c;
+            --text: #141413;
+            --muted: #6c6a64;
+            --label: #8e8b82;
+            --red: #c64545;
+            --amber: #e8a55a;
+            --green: #5db872;
+            --red-bg: rgba(198, 69, 69, .09);
+            --amber-bg: rgba(232, 165, 90, .09);
+            --green-bg: rgba(93, 184, 114, .09);
+            --grid-color: rgba(0, 0, 0, 0.04);
+            --shadow: none;
+            --shadow-lg: none;
+        }
+
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background .3s, color .3s;
+        }
+
+        body {
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 22px 22px;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 300;
+            backdrop-filter: blur(16px);
+        }
+
+        .nav-top {
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-badge {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .nav-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .nav-sub {
+            font-size: 9px;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            margin-top: 1px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .month-badge {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 11px;
+            font-size: 10px;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-weight: 700;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 6px 13px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: .2s;
+        }
+
+        .upload-btn:hover {
+            opacity: .88;
+            transform: translateY(-1px);
+        }
+
+        .theme-toggle {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 7px;
+            width: 29px;
+            height: 29px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: .2s;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+        }
+
+        /* ── PAGE TABS ── */
+        .nav-tabs {
+            display: flex;
+            border-top: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-tab {
+            padding: 9px 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: .15s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-tab:hover {
+            color: var(--text);
+            background: var(--surface2);
+        }
+
+        .nav-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: rgba(59, 110, 240, .04);
+        }
+
+        .nav-tab .tab-badge {
+            font-size: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1px 6px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        .nav-tab.active .tab-badge {
+            background: rgba(59, 110, 240, .12);
+            color: var(--accent);
+            border-color: rgba(59, 110, 240, .3);
+        }
+
+        /* ── UPLOAD ── */
+        .upload-area {
+            display: none;
+            background: var(--surface2);
+            border: 2px dashed var(--accent);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            margin: 8px 24px 0;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .upload-area.visible {
+            display: block;
+            animation: fadeIn .3s ease;
+        }
+
+        .upload-area p {
+            font-size: 10px;
+            color: var(--label);
+            margin-top: 3px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* ── PAGE CONTAINERS ── */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 88px);
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 205px;
+            flex-shrink: 0;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 12px 0;
+            position: sticky;
+            top: 88px;
+            height: calc(100vh - 88px);
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .sidebar-title {
+            font-size: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            padding: 0 12px 7px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        .dist-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: .15s;
+            border-left: 2px solid transparent;
+            font-size: 11px;
+            color: var(--label);
+        }
+
+        .dist-item:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        .dist-item.active {
+            border-left-color: var(--accent);
+            background: rgba(59, 110, 240, .06);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .dist-item.all-item {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 10px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 4px;
+            padding-bottom: 9px;
+        }
+
+        .dist-item.all-item.active {
+            color: var(--accent);
+        }
+
+        .dist-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .sidebar-search {
+            margin: 0 8px 8px;
+            position: relative;
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 6px 8px 6px 26px;
+            font-size: 10px;
+            color: var(--text);
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .sidebar-search input:focus {
+            border-color: var(--accent);
+        }
+
+        .sidebar-search::before {
+            content: '🔍';
+            position: absolute;
+            left: 8px;
+            top: 6px;
+            font-size: 10px;
+            opacity: .5;
+        }
+
+        .main {
+            flex: 1;
+            padding: 16px 20px 60px;
+            overflow-x: hidden;
+        }
+
+        @media(max-width:720px) {
+            .sidebar {
+                display: none;
+            }
+
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr !important;
+            }
+
+            .col-2 {
+                grid-column: span 1 !important;
+            }
+        }
+
+        @media(max-width:1100px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr !important;
+            }
+
+            .col-2 {
+                grid-column: span 1 !important;
+            }
+        }
+
+        /* ── BANNER ── */
+        .health-banner {
+            background: linear-gradient(135deg, rgba(59, 110, 240, .06), var(--surface2));
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 10px;
+            padding: 11px 15px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .banner-icon {
+            font-size: 20px;
+        }
+
+        .banner-text strong {
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 1px;
+        }
+
+        .banner-text span {
+            color: var(--muted);
+            font-size: 9px;
+        }
+
+        .banner-pulse {
+            position: absolute;
+            right: 16px;
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(.95);
+                box-shadow: 0 0 0 0 var(--green);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(0, 0, 0, 0);
+            }
+
+            100% {
+                transform: scale(.95);
+            }
+        }
+
+        /* ── SCORECARD ── */
+        .scorecard {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 12px;
+            padding: 15px 18px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .sc-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .sc-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            margin-bottom: 3px;
+        }
+
+        .sc-sub {
+            font-size: 9px;
+            color: var(--muted);
+            max-width: 560px;
+            line-height: 1.5;
+        }
+
+        .sc-formula {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 7px 11px;
+            margin-top: 7px;
+            font-size: 8px;
+            color: var(--label);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            line-height: 1.8;
+        }
+
+        .sc-formula strong {
+            color: var(--text);
+        }
+
+        .sc-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .sc-grade {
+            font-size: 26px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        .sc-overall {
+            text-align: center;
+        }
+
+        .sc-oval {
+            font-size: 22px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        .sc-olbl {
+            font-size: 7px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        .sc-segments {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+            gap: 7px;
+        }
+
+        .sc-seg {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 7px 9px;
+            text-align: center;
+        }
+
+        .sc-seg-val {
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            margin-bottom: 2px;
+        }
+
+        .sc-seg-lbl {
+            font-size: 7px;
+            color: var(--muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .sc-seg-sub {
+            font-size: 7px;
+            color: var(--muted);
+            margin-top: 1px;
+        }
+
+        /* ── KPI ── */
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(144px, 1fr));
+            gap: 9px;
+            margin-bottom: 14px;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            position: relative;
+            overflow: hidden;
+            transition: .2s;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--kpi-color, var(--accent));
+        }
+
+        .kpi-label {
+            font-size: 7px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        .kpi-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 4px 0 1px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            line-height: 1;
+        }
+
+        .kpi-sub {
+            font-size: 8px;
+            color: var(--label);
+        }
+
+        .kpi-icon {
+            position: absolute;
+            right: 11px;
+            top: 11px;
+            font-size: 17px;
+            opacity: .22;
+        }
+
+        .kpi-bar {
+            height: 3px;
+            background: var(--surface2);
+            border-radius: 2px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .kpi-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width .6s;
+        }
+
+        /* ── SECTION TITLE ── */
+        .section-title {
+            font-size: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.8px;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            margin-bottom: 9px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── GRIDS ── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 13px;
+            margin-bottom: 13px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 13px;
+            margin-bottom: 13px;
+        }
+
+        .grid-full {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 13px;
+            margin-bottom: 13px;
+        }
+
+        .col-2 {
+            grid-column: span 2;
+        }
+
+        /* ── CHART CARD ── */
+        .chart-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 15px 17px;
+            transition: .2s;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-card:hover {
+            border-color: var(--accent);
+        }
+
+        .cc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .chart-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chart-month {
+            font-size: 8px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            color: var(--accent);
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 2px 6px;
+            white-space: nowrap;
+        }
+
+        .chart-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sort-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 3px 7px;
+            font-size: 8px;
+            color: var(--label);
+            cursor: pointer;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            transition: .15s;
+        }
+
+        .sort-btn:hover,
+        .sort-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .chart-sub {
+            font-size: 9px;
+            color: var(--muted);
+            margin-bottom: 11px;
+            margin-top: 2px;
+        }
+
+        /* ── LEGEND ── */
+        .legend-bar {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            margin-bottom: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 13px;
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 9px;
+            color: var(--label);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        .legend-dot.red {
+            background: var(--red);
+        }
+
+        .legend-dot.amber {
+            background: var(--amber);
+        }
+
+        .legend-dot.green {
+            background: var(--green);
+        }
+
+        .legend-rule {
+            font-size: 8px;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            margin-left: auto;
+        }
+
+        /* ── RINGS ── */
+        .ring-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            padding-top: 4px;
+        }
+
+        .ring-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .ring-label {
+            font-size: 7px;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            text-align: center;
+            max-width: 54px;
+            line-height: 1.2;
+        }
+
+        .ring-val {
+            font-size: 9px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        svg.ring {
+            transform: rotate(-90deg);
+        }
+
+        circle.rbg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 4;
+        }
+
+        circle.rfill {
+            fill: none;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset .8s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        /* ── HEATMAP ── */
+        .heatmap-outer {
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .hm-row-wrapper {
+            border-radius: 4px;
+            padding: 2px;
+            transition: background .15s;
+        }
+
+        .hm-row-wrapper:hover {
+            background: var(--surface2);
+        }
+
+        .hm-label {
+            font-size: 8px;
+            color: var(--text);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-weight: 700;
+            text-align: right;
+            padding-right: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hm-col-label {
+            font-size: 7px;
+            text-align: center;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            padding: 0 2px;
+            line-height: 1.2;
+        }
+
+        .hm-cell {
+            height: 28px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-weight: 700;
+            cursor: default;
+            transition: transform .1s;
+            position: relative;
+        }
+
+        .hm-cell:hover {
+            transform: scale(1.1);
+            z-index: 20;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+        }
+
+        .tip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 5px 9px;
+            font-size: 8px;
+            color: #f8fafc;
+            white-space: nowrap;
+            z-index: 999;
+            pointer-events: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, .4);
+            min-width: 150px;
+        }
+
+        .tip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: #1e293b;
+        }
+
+        .hm-cell:hover .tip {
+            display: block;
+        }
+
+        .tab-row {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-bottom: 9px;
+        }
+
+        .tab-btn {
+            padding: 3px 9px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-size: 8px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: .15s;
+            font-weight: 600;
+        }
+
+        .tab-btn:hover,
+        .tab-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        /* ── TABLE ── */
+        .table-scroll {
+            overflow-x: auto;
+            border-radius: 8px;
+            padding-bottom: 5px;
+        }
+
+        .table-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 9px;
+            min-width: 900px;
+        }
+
+        thead tr {
+            background: var(--surface2);
+        }
+
+        th {
+            padding: 8px 7px;
+            text-align: left;
+            font-size: 7px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 2px solid var(--border);
+            white-space: normal;
+            line-height: 1.3;
+            vertical-align: bottom;
+        }
+
+        th:hover {
+            color: var(--text);
+        }
+
+        th.sorted {
+            color: var(--accent);
+        }
+
+        td {
+            padding: 6px 7px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--surface2);
+        }
+
+        .td-dist {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 9px;
+            min-width: 110px;
+            position: sticky;
+            left: 0;
+            background: var(--surface);
+            z-index: 10;
+            border-right: 1px solid var(--border);
+        }
+
+        tr:hover .td-dist {
+            background: var(--surface2);
+        }
+
+        .pct-cell {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            position: relative;
+            cursor: default;
+            min-width: 85px;
+        }
+
+        .pct-bar-wrap {
+            flex: 1;
+            height: 9px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .pct-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width .5s ease;
+        }
+
+        .pct-val {
+            font-size: 8px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            width: 28px;
+            text-align: right;
+            flex-shrink: 0;
+            font-weight: 700;
+        }
+
+        .pct-cell .tip {
+            bottom: calc(100% + 3px);
+            min-width: 130px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 1px 5px;
+            border-radius: 7px;
+            font-size: 7px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        .chip-red {
+            background: var(--red-bg);
+            color: var(--red);
+        }
+
+        .chip-amber {
+            background: var(--amber-bg);
+            color: var(--amber);
+        }
+
+        .chip-green {
+            background: var(--green-bg);
+            color: var(--green);
+        }
+
+        /* ── TD PANEL ── */
+        .td-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 13px;
+            margin-bottom: 13px;
+        }
+
+        @media(max-width:1100px) {
+            .td-panel {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media(max-width:720px) {
+            .td-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .td-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 15px 17px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .td-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--tc-color, var(--accent));
+        }
+
+        .td-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 9px;
+        }
+
+        .td-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .td-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 5px;
+        }
+
+        .td-lbl {
+            font-size: 8px;
+            color: var(--muted);
+            width: 70px;
+            flex-shrink: 0;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        .td-bar-wrap {
+            flex: 1;
+            height: 9px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .td-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width .6s ease;
+        }
+
+        .td-val {
+            font-size: 8px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-weight: 700;
+            width: 34px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .dist-td-row {
+            display: grid;
+            grid-template-columns: 105px 1fr 38px 1fr 38px;
+            gap: 5px;
+            align-items: center;
+            padding: 3px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dist-td-row:last-child {
+            border-bottom: none;
+        }
+
+        .dist-td-name {
+            font-size: 8px;
+            font-weight: 700;
+            color: var(--text);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .dist-td-bar-wrap {
+            height: 7px;
+            background: var(--surface2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .dist-td-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width .5s;
+        }
+
+        .dist-td-pct {
+            font-size: 8px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        /* ── MAP ── */
+        .map-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 15px 17px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-container {
+            flex: 1;
+            min-height: 280px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .leaflet-container {
+            background: transparent !important;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .leaflet-tooltip.leaflet-custom-tooltip {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-shadow: var(--shadow);
+            font-size: 9px;
+            padding: 5px 9px;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+
+        .map-legend {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            margin-top: 9px;
+            justify-content: center;
+        }
+
+        .map-leg-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 8px;
+            color: var(--label);
+        }
+
+        .map-leg-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 2px;
+        }
+
+        /* ── COMPARISON CARDS (HMIS vs UWIN) ── */
+        .cmp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 13px;
+        }
+
+        .cmp-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cmp-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent2);
+        }
+
+        .cmp-title {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .cmp-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 5px;
+        }
+
+        .cmp-source {
+            font-size: 7px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            color: var(--muted);
+            width: 38px;
+            flex-shrink: 0;
+        }
+
+        .cmp-bar-wrap {
+            flex: 1;
+            height: 8px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .cmp-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width .6s;
+        }
+
+        .cmp-pct {
+            font-size: 8px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-weight: 700;
+            width: 32px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .cmp-badge {
+            font-size: 7px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            padding: 1px 5px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .cmp-badge-hmis {
+            background: rgba(59, 110, 240, .1);
+            color: var(--accent);
+        }
+
+        .cmp-badge-uwin {
+            background: rgba(124, 58, 237, .1);
+            color: var(--accent2);
+        }
+
+        /* ── SOURCE ROW ── */
+        .source-row {
+            margin-top: 16px;
+            padding-top: 11px;
+            border-top: 1px solid var(--border);
+            font-size: 8px;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn .3s ease forwards;
+        }
+
+        .geo-control-select {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 2px 4px var(--grid-color);
+        }
+
+        .geo-control-select:focus {
+            border-color: var(--accent);
+        }
+
+        /* ── GEO POPUP (freeze-on-click) ── */
+        .leaflet-popup-content-wrapper.geo-popup {
+            background: #1e2a3a;
+            border: 1px solid #2e4057;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .45);
+            padding: 0;
+            min-width: 260px;
+        }
+
+        .leaflet-popup-content-wrapper.geo-popup .leaflet-popup-content {
+            margin: 0;
+        }
+
+        .leaflet-popup-tip-container {
+            display: none;
+        }
+
+        .geo-popup-inner {
+            padding: 14px 16px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .geo-popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .geo-popup-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e8f0fe;
+        }
+
+        .geo-popup-source {
+            font-size: 8px;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            color: #6b8ef5;
+            background: rgba(107, 142, 245, .12);
+            border: 1px solid rgba(107, 142, 245, .25);
+            border-radius: 5px;
+            padding: 2px 6px;
+        }
+
+        .geo-popup-kdi-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 5px 10px;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px solid #2e4057;
+            font-size: 9px;
+        }
+
+        .geo-popup-kdi-row:last-child {
+            border-bottom: none;
+        }
+
+        .geo-popup-kdi-name {
+            color: #8ba3be;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        .geo-popup-kdi-val {
+            color: #e8f0fe;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .geo-popup-kdi-tgt {
+            color: #526070;
+            text-align: right;
+        }
+
+        .geo-popup-kdi-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1px 5px;
+            border-radius: 5px;
+            font-size: 8px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            min-width: 36px;
+        }
+
+        .geo-popup-kdi-chip.green {
+            background: rgba(52, 211, 153, .18);
+            color: #34d399;
+        }
+
+        .geo-popup-kdi-chip.amber {
+            background: rgba(251, 191, 36, .18);
+            color: #fbbf24;
+        }
+
+        .geo-popup-kdi-chip.red {
+            background: rgba(248, 113, 113, .18);
+            color: #f87171;
+        }
+
+        /* ── GEO DISTRICT LEADER-LINE ANNOTATIONS ── */
+        .geo-district-label {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Centroid dot */
+        .gdl-dot {
+            border-radius: 50%;
+            border: 2px solid #fff;
+            animation: kdiDotPulse 2.2s ease-in-out infinite;
+        }
+
+        /* Floating bubble */
+        .gdl-bubble {
+            background: var(--header-bg);
+            border: 1.5px solid;
+            border-radius: 9px;
+            padding: 4px 8px 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(6px);
+            box-shadow: var(--shadow);
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .gdl-b-name {
+            font-size: 6.5px;
+            font-weight: 800;
+            color: var(--label);
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            text-transform: uppercase;
+            letter-spacing: .55px;
+            line-height: 1.3;
+        }
+
+        .gdl-b-pct {
+            font-size: 15px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            line-height: 1.1;
+            animation: kdiLabelPulse 2.8s ease-in-out infinite;
+        }
+
+        .gdl-bar {
+            height: 2px;
+            border-radius: 2px;
+            margin-top: 3px;
+            animation: kdiBarGlow 2.8s ease-in-out infinite;
+        }
+
+        @keyframes kdiDotPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 4px 1px currentColor;
+                transform: scale(1);
+            }
+
+            50% {
+                box-shadow: 0 0 10px 3px currentColor;
+                transform: scale(1.25);
+            }
+        }
+
+        @keyframes kdiLabelPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: .8;
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes kdiBarGlow {
+
+            0%,
+            100% {
+                opacity: .8;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+
+        /* Typography Override */
+        h1,
+        h2,
+        h3,
+        .card-title,
+        .metric-value,
+        .nav-title,
+        .section-title,
+        .hero-title,
+        .widget-title {
+            font-family: 'Cormorant Garamond', 'Times New Roman', serif !important;
+            letter-spacing: -0.03em;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-weight: 400 !important;
+            letter-spacing: -0.05em;
+        }
+
+        .upload-btn {
+            color: #ffffff !important;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 8px;
+        }
+
+        .card {
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: none !important;
+        }
+
+        /* Remove the grid dot background from body if it conflicts with cream canvas */
+        body {
+            background-image: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-top">
+            <div class="nav-left">
+                <div class="logo-badge">🛡️</div>
+                <div>
+                    <div class="nav-title">Immunization Intelligence Dashboard</div>
+                    <div class="nav-sub">Uttarakhand · FY 2026–27 · UWIN + HMIS</div>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="month-badge" id="activeBadge">APR 2026</div>
+                <button class="upload-btn" onclick="toggleUpload()">💉 Upload Sheet</button>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchPage('uwin')" id="tab-uwin">
+                🩺 UWIN Dashboard <span class="tab-badge">Default</span>
+            </div>
+            <div class="nav-tab" onclick="switchPage('hmis')" id="tab-hmis">
+                🏥 HMIS Dashboard <span class="tab-badge">April 2026</span>
+            </div>
+            <div class="nav-tab" onclick="switchPage('compare')" id="tab-compare">
+                ⚖️ HMIS vs UWIN <span class="tab-badge">Comparison</span>
+            </div>
+            <div class="nav-tab" onclick="switchPage('geo')" id="tab-geo">
+                📍 Geospatial Integration <span class="tab-badge">Map View</span>
+            </div>
+        </div>
+    </nav>
+
+
+    <div id="landing-overlay"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease;">
+        <div
+            style="background: var(--surface); padding: 40px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 500px; width: 90%; text-align: center;">
+            <div class="logo-badge" style="width: 56px; height: 56px; font-size: 24px; margin: 0 auto 16px;">🛡️</div>
+            <h1
+                style="font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 8px;">
+                Immunization Intelligence Dashboard</h1>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 30px; line-height: 1.5;">Welcome. Please load
+                the latest UWIN / HMIS dataset to initialize the dashboard.</p>
+
+            <div style="margin-bottom: 20px;">
+                <button class="upload-btn" style="width: 100%; justify-content: center; padding: 12px; font-size: 14px;"
+                    onclick="document.getElementById('fileInput').click()">
+                    📁 Upload Excel File (.xlsx)
+                </button>
+                <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(event)"
+                    style="display: none;">
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                <span style="font-size: 11px; color: var(--muted); font-weight: 600;">OR</span>
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="sheetUrlInput" placeholder="Paste Google Sheets Link..."
+                    style="flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--text); outline: none; font-family: 'Inter', sans-serif;">
+                <button class="upload-btn" onclick="fetchGoogleSheet()"
+                    style="padding: 0 16px; font-size: 13px;">Fetch</button>
+            </div>
+            <div id="fetch-status" style="margin-top: 12px; font-size: 11px; color: var(--amber); display: none;">
+                Fetching data...</div>
+        </div>
+    </div>
+
+
+    <div class="page active" id="page-uwin">
+        <div class="layout">
+            <nav class="sidebar">
+                <div class="sidebar-title">Districts</div>
+                <div class="sidebar-search"><input id="distSearch" placeholder="Search…"
+                        oninput="filterSidebar('uwin',this.value)"></div>
+                <div id="sidebarList-uwin"></div>
+            </nav>
+            <div class="main">
+                <div class="health-banner fade-in">
+                    <div class="banner-icon">🏥</div>
+                    <div class="banner-text">
+                        <strong>UWIN — Universal Immunization Programme Progress Monitor</strong>
+                        <span>Birth Dose → 16-24 Mo → 5-16 yr · FIC · Hep-B · Zero Dose · MR1/MR2 · TD10 · TD16 · AQ–CS
+                            Tracker</span>
+                    </div>
+                    <div class="banner-pulse"></div>
+                </div>
+
+                <div id="uwin-scorecard" class="fade-in"></div>
+                <div class="kpi-strip" id="uwin-kpi"></div>
+
+                <div class="legend-bar">
+                    <div class="legend-item">
+                        <div class="legend-dot red"></div><span>Below 60% — Critical</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot amber"></div><span>60–80% — Needs Attention</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot green"></div><span>Above 80% — On Track</span>
+                    </div>
+                    <div class="legend-rule">% vs monthly target (AQ–CS tracker)</div>
+                </div>
+
+                <div class="section-title">Key Immunization Indicators</div>
+                <div id="uwin-indicators" style="margin-bottom:13px;"></div>
+
+                <div class="section-title">Session Performance</div>
+                <div class="grid-full">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">🩺 Sessions Planned vs Held <span class="chart-month"
+                                    id="u-lbl-sess"></span></div>
+                            <div class="chart-controls"><button class="sort-btn"
+                                    onclick="toggleSortChart('uwin','sess')">⇅ Sort</button></div>
+                        </div>
+                        <div class="chart-sub">RAG-coded held bars · full-width single row</div>
+                        <canvas id="u-sessionChart" height="90"></canvas>
+                    </div>
+                </div>
+                <div class="grid-full">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">⚡ Session Utilisation Rate <span class="chart-month"
+                                    id="u-lbl-ring"></span></div>
+                            <div class="chart-controls"><button class="sort-btn" id="u-sortRingBtn"
+                                    onclick="toggleSortRings('uwin')">⇅ Sort</button></div>
+                        </div>
+                        <div class="chart-sub">% sessions held vs planned · 🟢 ≥90% · 🟡 80–90% · 🔴 &lt;80%</div>
+                        <div class="ring-wrap" id="u-ringWrap"></div>
+                    </div>
+                </div>
+
+                <div class="section-title">Beneficiary Coverage</div>
+                <div class="grid-3">
+                    <div class="chart-card col-2">
+                        <div class="cc-header">
+                            <div class="chart-title">👥 Beneficiaries by Category <span class="chart-month"
+                                    id="u-lbl-benef"></span></div>
+                            <div class="chart-controls"><button class="sort-btn"
+                                    onclick="toggleSortChart('uwin','benef')">⇅ Sort</button></div>
+                        </div>
+                        <div class="chart-sub">Pregnant women / infants / children &gt;1yr / adolescents</div>
+                        <canvas id="u-beneficiaryChart" height="190"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">📊 State Mix <span class="chart-month" id="u-lbl-donut"></span>
+                            </div>
+                        </div>
+                        <div class="chart-sub">Proportional split</div>
+                        <canvas id="u-donutChart" height="190"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-title">TD10 &amp; TD16 — Target vs Achievement (5–16 yr Adolescents)</div>
+                <div class="td-panel">
+                    <div class="td-card" style="--tc-color:var(--accent)">
+                        <div class="td-header">
+                            <div class="td-title">🎯 Monthly Targets <span class="chart-month"
+                                    id="u-lbl-tdtarget"></span></div>
+                            <span id="u-td10chip"></span>
+                        </div>
+                        <div id="u-td1016content"></div>
+                    </div>
+                    <div class="map-card">
+                        <div class="td-header">
+                            <div class="td-title">🗺 District Achievement Map</div><span class="chart-month">TD10
+                                Coverage</span>
+                        </div>
+                        <div style="font-size:8px;color:var(--muted);margin-bottom:7px;">Leaflet GeoSpatial · Pan &amp;
+                            Zoom · click district to filter</div>
+                        <div class="map-container" id="u-mapContainer"></div>
+                        <div class="map-legend" id="u-mapLegend"></div>
+                    </div>
+                    <div class="td-card" style="--tc-color:var(--accent2)">
+                        <div class="td-header">
+                            <div class="td-title">📍 District-wise Achievement <span class="chart-month"
+                                    id="u-lbl-distwise"></span></div>
+                            <button class="sort-btn" onclick="toggleSortDistTD('uwin')">⇅ Sort</button>
+                        </div>
+                        <div
+                            style="font-size:7px;color:var(--muted);margin-bottom:5px;font-family:'Space Mono',monospace;">
+                            District · TD10 % · TD16 %</div>
+                        <div id="u-distTDRows"></div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">🤰 Women TD Vaccination <span class="chart-month"
+                                    id="u-lbl-td"></span></div>
+                            <button class="sort-btn" onclick="toggleSortChart('uwin','td')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">Td-1, Td-2, Td-Booster by district</div>
+                        <canvas id="u-tdChart" height="210"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">🎒 TD10 &amp; TD16 Given vs Target <span class="chart-month"
+                                    id="u-lbl-adol"></span></div>
+                            <button class="sort-btn" onclick="toggleSortChart('uwin','adol')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">Actual given vs monthly target per district</div>
+                        <canvas id="u-adolChart" height="210"></canvas>
+                    </div>
+                </div>
+
+
+                <div class="section-title">Additional KDI Metrics</div>
+                <div class="grid-2" style="margin-bottom:13px;">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">💉 HPV Vaccination <span class="chart-month" id="u-lbl-hpv"></span>
+                            </div>
+                            <button class="sort-btn" onclick="toggleSortChart('uwin','hpv')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">HPV doses given by district</div>
+                        <canvas id="u-hpvChart" height="210"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">⚠️ AEFI Cases <span class="chart-month" id="u-lbl-aefi"></span>
+                            </div>
+                            <button class="sort-btn" onclick="toggleSortChart('uwin','aefi')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">Reported Adverse Events Following Immunization</div>
+                        <canvas id="u-aefiChart" height="210"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-title">Immunization Lifecycle Cascade</div>
+                <div class="chart-card" style="margin-bottom:13px;">
+                    <div class="cc-header">
+                        <div class="chart-title">📈 Coverage Cascade: Birth Dose → 16-24 Mo → 5-16 yr <span
+                                class="chart-month" id="u-lbl-trend"></span></div>
+                        <button class="sort-btn" onclick="toggleSortTrend('uwin')">⇅ Sort Stages</button>
+                    </div>
+                    <div id="u-trendCalcNote"
+                        style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:7px 10px;margin-bottom:9px;font-size:7px;color:var(--label);font-family:'Space Mono',monospace;line-height:1.8;">
+                    </div>
+                    <canvas id="u-trendChart" height="120"></canvas>
+                </div>
+
+                <div class="section-title">Clinical Coverage Heatmap</div>
+                <div class="chart-card" style="margin-bottom:13px;">
+                    <div class="cc-header">
+                        <div class="chart-title">🌡️ Vaccine Coverage by District <span class="chart-month"
+                                id="u-lbl-heat"></span></div>
+                        <div class="chart-controls"><button class="sort-btn" id="u-heatSortBtn"
+                                onclick="toggleSortHeatmap('uwin')">⇅ Sort</button></div>
+                    </div>
+                    <div class="chart-sub">% vs monthly target (AQ–CS) · 🔴 &lt;60% · 🟡 60–80% · 🟢 &gt;80% · hover for
+                        exact</div>
+                    <div class="tab-row" id="u-heatmapTabs"></div>
+                    <div id="u-heatmapContainer" class="heatmap-outer"></div>
+                </div>
+
+                <div class="section-title">Full Clinical Indicator Table</div>
+                <div class="chart-card" style="margin-bottom:13px;">
+                    <div class="cc-header">
+                        <div class="chart-title">📋 All Indicators — <span id="u-tableDistrictLabel">All
+                                Districts</span> <span class="chart-month" id="u-lbl-table"></span></div>
+                        <div class="chart-controls"><button class="sort-btn" onclick="resetTableSort('uwin')">↺
+                                Reset</button></div>
+                    </div>
+                    <div class="chart-sub">% vs target · hover bar for exact number · click header to sort</div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead id="u-tableHead"></thead>
+                            <tbody id="u-tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="source-row" id="u-sourceRow"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="page-hmis">
+        <div class="layout">
+            <nav class="sidebar">
+                <div class="sidebar-title">Districts</div>
+                <div class="sidebar-search"><input id="distSearch-hmis" placeholder="Search…"
+                        oninput="filterSidebar('hmis',this.value)"></div>
+                <div id="sidebarList-hmis"></div>
+            </nav>
+            <div class="main">
+                <div class="health-banner fade-in" style="border-left-color:var(--accent2)">
+                    <div class="banner-icon">🏥</div>
+                    <div class="banner-text">
+                        <strong>HMIS — Health Management Information System</strong>
+                        <span>District-level vaccination data · April 2026 · FIC · Hep-B · Zero Dose · MR1/MR2 · Dropout
+                            · TD10</span>
+                    </div>
+                    <div class="banner-pulse" style="background:var(--accent2)"></div>
+                </div>
+
+                <div class="kpi-strip" id="hmis-kpi"></div>
+
+                <div class="legend-bar">
+                    <div class="legend-item">
+                        <div class="legend-dot red"></div><span>Below 60% — Critical</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot amber"></div><span>60–80% — Needs Attention</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot green"></div><span>Above 80% — On Track</span>
+                    </div>
+                    <div class="legend-rule">% vs monthly target · HMIS source</div>
+                </div>
+
+                <div class="section-title">Key HMIS Indicators</div>
+                <div id="hmis-indicators" style="margin-bottom:13px;"></div>
+
+                <div class="section-title">FIC Coverage — HMIS</div>
+                <div class="grid-2">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">✅ FIC — Full Immunization Coverage <span class="chart-month"
+                                    id="h-lbl-fic"></span></div>
+                            <button class="sort-btn" onclick="toggleSortChart('hmis','fic')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">Penta-3 / Monthly Target · HMIS reported data</div>
+                        <canvas id="h-ficChart" height="200"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">⚠️ Zero Dose — HMIS <span class="chart-month" id="h-lbl-zd"></span>
+                            </div>
+                            <button class="sort-btn" onclick="toggleSortChart('hmis','zd')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">(Target − Penta1) / Target · Unvaccinated children</div>
+                        <canvas id="h-zdChart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-title">MR1 &amp; MR2 Coverage — HMIS</div>
+                <div class="grid-2">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">🧪 MR-1 &amp; MR-2 Coverage <span class="chart-month"
+                                    id="h-lbl-mr"></span></div>
+                            <button class="sort-btn" onclick="toggleSortChart('hmis','mr')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">MR-1 and MR-2 given vs monthly target · HMIS</div>
+                        <canvas id="h-mrChart" height="200"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">💉 Hep-B Birth Dose — HMIS <span class="chart-month"
+                                    id="h-lbl-hepb"></span></div>
+                            <button class="sort-btn" onclick="toggleSortChart('hmis','hepb')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">HepB given vs institutional deliveries · HMIS</div>
+                        <canvas id="h-hepbChart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-title">TD10 Achievement — HMIS</div>
+                <div class="grid-2">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">🎒 TD10 Achievement <span class="chart-month"
+                                    id="h-lbl-td10"></span></div>
+                            <button class="sort-btn" onclick="toggleSortChart('hmis','td10')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">TD10 given vs monthly target · HMIS</div>
+                        <canvas id="h-td10Chart" height="200"></canvas>
+                    </div>
+                    <div class="map-card">
+                        <div class="td-header">
+                            <div class="td-title">🗺 HMIS TD10 Map</div><span class="chart-month">HMIS Coverage</span>
+                        </div>
+                        <div style="font-size:8px;color:var(--muted);margin-bottom:7px;">District TD10 achievement from
+                            HMIS · click to filter</div>
+                        <div class="map-container" id="h-mapContainer"></div>
+                        <div class="map-legend" id="h-mapLegend"></div>
+                    </div>
+                </div>
+
+                <div class="section-title">Full HMIS Indicator Table</div>
+                <div class="chart-card" style="margin-bottom:13px;">
+                    <div class="cc-header">
+                        <div class="chart-title">📋 HMIS Indicators — <span id="h-tableDistrictLabel">All
+                                Districts</span></div>
+                        <div class="chart-controls"><button class="sort-btn" onclick="resetTableSort('hmis')">↺
+                                Reset</button></div>
+                    </div>
+                    <div class="chart-sub">All HMIS comparison indicators · hover for exact values · click header to
+                        sort</div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead id="h-tableHead"></thead>
+                            <tbody id="h-tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="source-row" id="h-sourceRow">Source: HMIS Portal · April 2026 · District Aggregated Data
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="page-compare">
+        <div class="layout">
+            <nav class="sidebar">
+                <div class="sidebar-title">Districts</div>
+                <div class="sidebar-search"><input id="distSearch-cmp" placeholder="Search…"
+                        oninput="filterSidebar('cmp',this.value)"></div>
+                <div id="sidebarList-cmp"></div>
+            </nav>
+            <div class="main">
+                <div class="health-banner fade-in" style="border-left-color:#f59e0b">
+                    <div class="banner-icon">⚖️</div>
+                    <div class="banner-text">
+                        <strong>HMIS vs UWIN — Data Quality &amp; Coverage Comparison</strong>
+                        <span>Side-by-side comparison across FIC, Hep-B, Zero Dose, MR1/MR2, Dropout, TD10 · April
+                            2026</span>
+                    </div>
+                    <div class="banner-pulse" style="background:#f59e0b"></div>
+                </div>
+
+                <div class="kpi-strip" id="cmp-kpi"></div>
+
+                <div class="section-title">FIC — Full Immunization Coverage Comparison</div>
+                <div class="grid-2" style="margin-bottom:13px;">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">✅ FIC: HMIS vs UWIN <span class="chart-month">April 2026</span>
+                            </div>
+                            <button class="sort-btn" onclick="toggleSortChart('cmp','fic')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">Grouped bar · HMIS (blue) vs UWIN (purple) · % of monthly target</div>
+                        <canvas id="c-ficChart" height="210"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">📊 FIC Gap Analysis</div>
+                        </div>
+                        <div class="chart-sub">UWIN − HMIS difference · positive = UWIN higher</div>
+                        <canvas id="c-ficGapChart" height="210"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-title">Hep-B Birth Dose Comparison</div>
+                <div class="grid-2" style="margin-bottom:13px;">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">💉 Hep-B: HMIS vs UWIN <span class="chart-month">April 2026</span>
+                            </div>
+                            <button class="sort-btn" onclick="toggleSortChart('cmp','hepb')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">Given vs Institutional Deliveries · % comparison</div>
+                        <canvas id="c-hepbChart" height="210"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">⚠️ Zero Dose: HMIS vs UWIN <span class="chart-month">April
+                                    2026</span></div>
+                            <button class="sort-btn" onclick="toggleSortChart('cmp','zd')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">% unvaccinated (Target − Penta1) / Target</div>
+                        <canvas id="c-zdChart" height="210"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-title">MR1 &amp; MR2 Comparison</div>
+                <div class="grid-2" style="margin-bottom:13px;">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">🧪 MR-1: HMIS vs UWIN <span class="chart-month">April 2026</span>
+                            </div>
+                            <button class="sort-btn" onclick="toggleSortChart('cmp','mr1')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">MR-1 coverage % comparison</div>
+                        <canvas id="c-mr1Chart" height="210"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">🔬 MR-2: HMIS vs UWIN <span class="chart-month">April 2026</span>
+                            </div>
+                            <button class="sort-btn" onclick="toggleSortChart('cmp','mr2')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">MR-2 coverage % comparison</div>
+                        <canvas id="c-mr2Chart" height="210"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-title">Dropout Rate Comparison</div>
+                <div class="grid-3" style="margin-bottom:13px;">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">📉 Dropout: Penta-1 → Penta-3</div>
+                            <button class="sort-btn" onclick="toggleSortChart('cmp','doP1P3')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">% dropout HMIS vs UWIN</div>
+                        <canvas id="c-doP1P3Chart" height="190"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">📉 Dropout: Penta-3 → MR-1</div>
+                            <button class="sort-btn" onclick="toggleSortChart('cmp','doP3MR1')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">% dropout HMIS vs UWIN</div>
+                        <canvas id="c-doP3MR1Chart" height="190"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">📉 Dropout: MR-1 → MR-2</div>
+                            <button class="sort-btn" onclick="toggleSortChart('cmp','doMR1MR2')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">% dropout HMIS vs UWIN</div>
+                        <canvas id="c-doMR1MR2Chart" height="190"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-title">TD10 Achievement Comparison</div>
+                <div class="grid-2" style="margin-bottom:13px;">
+                    <div class="chart-card">
+                        <div class="cc-header">
+                            <div class="chart-title">💊 TD10: HMIS vs UWIN <span class="chart-month">April 2026</span>
+                            </div>
+                            <button class="sort-btn" onclick="toggleSortChart('cmp','td10')">⇅ Sort</button>
+                        </div>
+                        <div class="chart-sub">TD10 achievement % comparison</div>
+                        <canvas id="c-td10Chart" height="210"></canvas>
+                    </div>
+                    <div class="map-card">
+                        <div class="td-header">
+                            <div class="td-title">🗺 UWIN vs HMIS FIC Gap Map</div>
+                        </div>
+                        <div style="font-size:8px;color:var(--muted);margin-bottom:7px;">Colour = UWIN FIC % · hover for
+                            HMIS vs UWIN comparison</div>
+                        <div class="map-container" id="c-mapContainer"></div>
+                        <div class="map-legend" id="c-mapLegend"></div>
+                    </div>
+                </div>
+
+                <div class="section-title">District-wise Comparison Summary</div>
+                <div class="cmp-grid" id="cmp-distCards"></div>
+
+                <div class="section-title">Full Comparison Table</div>
+                <div class="chart-card" style="margin-bottom:13px;">
+                    <div class="cc-header">
+                        <div class="chart-title">📋 HMIS vs UWIN — All Indicators</div>
+                        <div class="chart-controls"><button class="sort-btn" onclick="resetTableSort('cmp')">↺
+                                Reset</button></div>
+                    </div>
+                    <div class="chart-sub">Side by side · click header to sort</div>
+                    <div class="table-scroll">
+                        <table>
+                            <thead id="c-tableHead"></thead>
+                            <tbody id="c-tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="source-row">Source: UWIN Portal + HMIS Portal · April 2026 · District Aggregated</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="page-geo">
+        <div class="layout">
+            <nav class="sidebar">
+                <div class="sidebar-title">Districts Map Filter</div>
+                <div class="sidebar-search"><input id="distSearch-geo" placeholder="Search…"
+                        oninput="filterSidebar('geo',this.value)"></div>
+                <div id="sidebarList-geo"></div>
+            </nav>
+            <div class="main">
+                <div class="health-banner fade-in" style="border-left-color:#059669">
+                    <div class="banner-icon">🗺️</div>
+                    <div class="banner-text">
+                        <strong>Geospatial Intelligence — Uttarakhand District Coverage Map</strong>
+                        <span>District polygon fill · RAG colour-coded by selected KDI · UWIN / HMIS sources · All 13
+                            districts</span>
+                    </div>
+                    <div class="banner-pulse" style="background:#059669"></div>
+                </div>
+
+                <!-- Controls bar -->
+                <div
+                    style="display:flex;align-items:center;gap:10px;background:var(--surface);padding:12px 18px;border-radius:11px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:14px;flex-wrap:wrap;">
+                    <div style="font-size:12px;font-weight:700;color:var(--text);font-family:'Space Mono',monospace;">
+                        🎛️ Configure Map</div>
+                    <select id="geo-source" class="geo-control-select" onchange="updateGeoMap()">
+                        <option value="UWIN">Source: UWIN</option>
+                        <option value="HMIS">Source: HMIS</option>
+                    </select>
+                    <select id="geo-kdi" class="geo-control-select" onchange="updateGeoMap()">
+                        <option value="FIC">KDI: FIC (Full Immunization)</option>
+                        <option value="HepB">KDI: Hep-B Birth Dose</option>
+                        <option value="Penta1">KDI: Penta 1</option>
+                        <option value="Penta2">KDI: Penta 2</option>
+                        <option value="Penta3">KDI: Penta 3</option>
+                        <option value="MR1">KDI: MR 1</option>
+                        <option value="MR2">KDI: MR 2</option>
+                        <option value="TD10">KDI: TD 10</option>
+                        <option value="TD16">KDI: TD 16</option>
+                        <option value="ZeroDose">KDI: Zero Dose</option>
+                        <option value="DO_P3_MR1">KDI: Dropout (Penta3→MR1)</option>
+                        <option value="DO_MR1_MR2">KDI: Dropout (MR1→MR2)</option>
+                        <option value="SDG">KDI: SDG Proxy (Penta-3)</option>
+                    </select>
+                    <span class="chart-month" id="g-lbl-source" style="margin-left:auto;">UWIN · FIC</span>
+                </div>
+
+                <!-- KDI Summary tiles -->
+                <div class="section-title">All KDI Snapshot — <span id="g-kdi-src-lbl">UWIN · April 2026</span></div>
+                <div id="geo-kdi-strip"
+                    style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:14px;">
+                </div>
+
+                <!-- Polygon map -->
+                <div class="chart-card" style="padding:15px 17px;">
+                    <div
+                        style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+                        <div class="chart-title">🗺️ Uttarakhand — District Coverage Map <span class="chart-month"
+                                id="g-map-kdi-lbl">FIC</span></div>
+                        <div style="font-size:8px;color:var(--muted);font-family:'Space Mono',monospace;">Hover district
+                            · click to filter sidebar</div>
+                    </div>
+                    <div id="g-mapContainer"
+                        style="height:600px;border-radius:8px;overflow:hidden;border:1px solid var(--border);"></div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;justify-content:center;">
+                        <div class="map-leg-item">
+                            <div class="map-leg-dot" style="background:var(--green)"></div>≥ 80% — On Track
+                        </div>
+                        <div class="map-leg-item">
+                            <div class="map-leg-dot" style="background:var(--amber)"></div>60–80% — Attention
+                        </div>
+                        <div class="map-leg-item">
+                            <div class="map-leg-dot" style="background:var(--red)"></div>&lt; 60% — Critical
+                        </div>
+                        <div id="g-inv-legend" class="map-leg-item" style="display:none;">
+                            <div class="map-leg-dot" style="background:var(--muted);opacity:.5"></div>Inverted: lower =
+                            better
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // ════════════════════════════════════════════════════════
+        //  UWIN + HMIS IMMUNIZATION DASHBOARD · Complete Engine
+        // ════════════════════════════════════════════════════════
+
+        // ── UWIN BUILT-IN DATA ──
+        let UWIN_DATA = null;
+
+        // ── HMIS BUILT-IN DATA (April 2026) ──
+        let HMIS_DATA = null;
+
+        // ── GEOSPATIAL DATA (Uttarakhand Districts Coordinates) ──
+        const DISTRICT_COORDS = {
+            "ALMORA": [29.5892, 79.6467],
+            "BAGESHWAR": [29.8404, 79.7694],
+            "CHAMOLI": [30.2937, 79.5603],
+            "CHAMPAWAT": [29.3209, 80.0088],
+            "DEHRADUN": [30.3165, 78.0322],
+            "HARIDWAR": [29.9457, 78.1642],
+            "NAINITAL": [29.3919, 79.4542],
+            "PAURI GARHWAL": [29.8688, 78.8383],
+            "PITHORAGARH": [29.5829, 80.2182],
+            "RUDRA PRAYAG": [30.2844, 78.9811],
+            "TEHRI GARHWAL": [30.3833, 78.4833],
+            "UDHAM SINGH NAGAR": [28.9800, 79.4000],
+            "UTTAR KASHI": [30.7268, 78.4354]
+        };
+
+        // ── VACCINE GROUPS (UWIN) ──
+        const VACCINE_GROUPS = {
+            "Birth Dose": [{ k: "HepB_Given", p: "HepB_Pct", l: "Hep-B" }, { k: "BCG_Given", p: "BCG_Pct", l: "BCG" }, { k: "OPV0_Given", p: "OPV0_Pct", l: "OPV-0" }],
+            "6 Weeks": [{ k: "Penta1_Given", p: "Penta1_Pct", l: "Penta-1" }, { k: "RVV1_Given", p: "RVV1_Pct", l: "RVV-1" }, { k: "fIPV1_Given", p: "fIPV1_Pct", l: "fIPV-1" }, { k: "PCV1_Given", p: "PCV1_Pct", l: "PCV-1" }, { k: "OPV1_Given", p: "OPV1_Pct", l: "OPV-1" }],
+            "10 Weeks": [{ k: "RVV2_Given", p: "RVV2_Pct", l: "RVV-2" }, { k: "OPV2_Given", p: "OPV2_Pct", l: "OPV-2" }, { k: "Penta2_Given", p: "Penta2_Pct", l: "Penta-2" }],
+            "14 Weeks": [{ k: "OPV3_Given", p: "OPV3_Pct", l: "OPV-3" }, { k: "Penta3_Given", p: "Penta3_Pct", l: "Penta-3" }, { k: "RVV3_Given", p: "RVV3_Pct", l: "RVV-3" }, { k: "fIPV2_Given", p: "fIPV2_Pct", l: "fIPV-2" }, { k: "PCV2_Given", p: "PCV2_Pct", l: "PCV-2" }],
+            "9–12 Mo": [{ k: "MR1_Given", p: "MR1_Pct", l: "MR-1" }, { k: "JE1_Given", p: "JE1_Pct", l: "JE-1" }, { k: "PCVBooster_Given", p: "PCVBooster_Pct", l: "PCV-B" }],
+            "16–24 Mo": [{ k: "MR2_Given", p: "MR2_Pct", l: "MR-2" }, { k: "DPTB1_Given", p: "DPTB1_Pct", l: "DPT-B1" }, { k: "OPVB_Given", p: "OPVB_Pct", l: "OPV-B" }],
+            "5–16 yr": [{ k: "DPTB2_Given", p: "DPTB2_Pct", l: "DPT-B2" }, { k: "TD10_Given", p: "TD10_Pct", l: "TD10" }, { k: "TD16_Given", p: "TD16_Pct", l: "TD16" }]
+        };
+        const ALL_STAGES = Object.keys(VACCINE_GROUPS);
+
+        const TABLE_COLS_UWIN = [
+            { key: 'Districts', label: 'District' }, { key: 'Session Planned', label: 'Sess Plan', tKey: null }, { key: 'Session Held', label: 'Sess Held', tKey: null },
+            { key: 'FIC_%', label: 'FIC %', tKey: null, computed: true }, { key: 'ZeroDose_%', label: 'Zero Dose %', tKey: null, computed: true },
+            { key: 'HepB_Given', label: 'Hep-B', tKey: 'BD_Target' }, { key: 'Penta1_Given', label: 'Penta-1', tKey: 'Target_01yr' },
+            { key: 'Penta3_Given', label: 'Penta-3', tKey: 'Target_01yr' }, { key: 'MR1_Given', label: 'MR-1', tKey: 'Target_01yr' },
+            { key: 'MR2_Given', label: 'MR-2', tKey: 'Target_01yr' }, { key: 'DO_P1P3', label: 'DO: P1→P3', tKey: null, computed: true },
+            { key: 'DO_P3MR1', label: 'DO: P3→MR1', tKey: null, computed: true }, { key: 'TD10_Given', label: 'TD10', tKey: 'TD10_Target' }, { key: 'TD16_Given', label: 'TD16', tKey: 'TD16_Target' }
+        ];
+
+        const TABLE_COLS_HMIS = [
+            { key: 'Districts', label: 'District' }, { key: 'FIC_%', label: 'FIC %', tKey: null, computed: true },
+            { key: 'ZeroDose_%', label: 'Zero Dose %', tKey: null, computed: true }, { key: 'HepB_Given', label: 'Hep-B', tKey: 'BD_Target' },
+            { key: 'Penta1_Given', label: 'Penta-1', tKey: 'Target_01yr' }, { key: 'Penta3_Given', label: 'Penta-3', tKey: 'Target_01yr' },
+            { key: 'MR1_Given', label: 'MR-1', tKey: 'Target_01yr' }, { key: 'MR2_Given', label: 'MR-2', tKey: 'Target_01yr' },
+            { key: 'DO_P1P3', label: 'DO: P1→P3', tKey: null, computed: true }, { key: 'TD10_Given', label: 'TD10', tKey: 'TD10_Target' }
+        ];
+
+        // ── STATE ──
+        let D = JSON.parse(JSON.stringify(UWIN_DATA));
+        let HMIS = HMIS_DATA;
+        let activePage = 'uwin';
+        let activeDistrict = { uwin: 'ALL', hmis: 'ALL', cmp: 'ALL', geo: 'ALL' };
+        let activeHeatGroup = 'Birth Dose';
+        let sortCol = { uwin: null, hmis: null, cmp: null };
+        let sortDir = { uwin: 1, hmis: 1, cmp: 1 };
+        let charts = {};
+        let chartSortOrders = {};
+        let heatSortOrder = 'default';
+        let distTDSortOrder = 'default';
+        let ringSortOrder = 'default';
+        let trendSortOrder = 'default';
+        let leafletMaps = {};
+        let geojsonLayers = {};
+        let geojsonPromise = null;
+        let geoMapInstance = null;
+        let geoMarkers = [];
+
+        // ── UTILITIES ──
+        const gs = p => getComputedStyle(document.documentElement).getPropertyValue(p).trim();
+        const sumF = (arr, k) => arr.reduce((a, b) => a + (+b[k] || 0), 0);
+        const fmt = n => (+n).toLocaleString('en-IN');
+        const pctOf = (a, b) => b ? Math.round(a / b * 100) : 0;
+        const capDisp = r => Math.min(Math.round(r * 100), 100);
+        const shortD = d => d.length > 11 ? d.slice(0, 10) + '…' : d;
+
+        function statusColor(p) {
+            if (p >= 80) return gs('--green');
+            if (p >= 60) return gs('--amber');
+            return gs('--red');
+        }
+        function utilisationColor(p) {
+            if (p >= 90) return gs('--green');
+            if (p >= 80) return gs('--amber');
+            return gs('--red');
+        }
+        function ragClass(p) { return p >= 80 ? 'chip-green' : p >= 60 ? 'chip-amber' : 'chip-red'; }
+
+        // ── COMPUTED ──
+        function computeRow(row) {
+            const fic = row['FIC_%'] !== undefined ? row['FIC_%'] : (row.Target_01yr ? Math.min(Math.round(row.Penta3_Given / row.Target_01yr * 100), 100) : 0);
+            const zeroDose = row['ZeroDose_%'] !== undefined ? row['ZeroDose_%'] : (row.Target_01yr ? Math.max(0, Math.round((row.Target_01yr - row.Penta1_Given) / row.Target_01yr * 100)) : 0);
+            const doP1P3 = row['DO_P1P3'] !== undefined ? row['DO_P1P3'] : (row.Penta1_Given > 0 ? Math.round((row.Penta1_Given - row.Penta3_Given) / row.Penta1_Given * 100) : 0);
+            const doP3MR1 = row['DO_P3MR1'] !== undefined ? row['DO_P3MR1'] : (row.Penta3_Given > 0 ? Math.round((row.Penta3_Given - row.MR1_Given) / row.Penta3_Given * 100) : 0);
+            const doMR1MR2 = row['DO_MR1MR2'] !== undefined ? row['DO_MR1MR2'] : (row.MR1_Given > 0 ? Math.round((row.MR1_Given - row.MR2_Given) / row.MR1_Given * 100) : 0);
+            return { ...row, 'FIC_%': fic, 'ZeroDose_%': zeroDose, 'DO_P1P3': doP1P3, 'DO_P3MR1': doP3MR1, 'DO_MR1MR2': doMR1MR2 };
+        }
+
+        function getUWINRecords() {
+            const recs = D.records.map(computeRow);
+            return activeDistrict.uwin === 'ALL' ? recs : recs.filter(r => r.Districts === activeDistrict.uwin);
+        }
+        function getHMISRecords() {
+            const recs = HMIS.records.map(computeRow);
+            return activeDistrict.hmis === 'ALL' ? recs : recs.filter(r => r.Districts === activeDistrict.hmis);
+        }
+        function getDistrictAvgScore(row) {
+            const cr = computeRow(row);
+            const allV = Object.values(VACCINE_GROUPS).flat();
+            const vals = allV.map(v => capDisp(cr[v.p] || 0));
+            return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+        }
+
+        // ── NAV ──
+        function switchPage(pg) {
+            activePage = pg;
+            ['uwin', 'hmis', 'compare', 'geo'].forEach(p => {
+                const pEl = document.getElementById('page-' + p);
+                const tEl = document.getElementById('tab-' + p);
+                if (pEl) pEl.classList.toggle('active', p === pg);
+                if (tEl) tEl.classList.toggle('active', p === pg);
+            });
+            if (pg === 'uwin') renderUWIN();
+            if (pg === 'hmis') renderHMIS();
+            if (pg === 'compare') renderCompare();
+            if (pg === 'geo') renderGeo();
+
+            // re-invalidate maps after tab switch
+            setTimeout(() => {
+                Object.values(leafletMaps).forEach(m => { try { m.invalidateSize(); } catch (e) { } });
+                if (geoMapInstance) geoMapInstance.invalidateSize();
+            }, 200);
+        }
+
+        function toggleUpload() {
+            document.getElementById('uploadArea').classList.toggle('visible');
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+            document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+            // Redraw charts after theme change
+            setTimeout(() => {
+                if (activePage === 'uwin') renderUWIN();
+                if (activePage === 'hmis') renderHMIS();
+                if (activePage === 'compare') renderCompare();
+                if (activePage === 'geo') renderGeo();
+            }, 300);
+        }
+
+        // ── SIDEBAR ──
+        function buildSidebar(pg, records, distKey) {
+            const listId = 'sidebarList-' + pg;
+            const el = document.getElementById(listId);
+            if (!el) return;
+            const ad = activeDistrict[distKey || pg];
+            let html = `<div class="dist-item all-item ${ad === 'ALL' ? 'active' : ''}" onclick="selectDistrict('${pg}','ALL')"><span>🏥 All Districts</span></div>`;
+            records.forEach(r => {
+                const avg = pg === 'uwin' ? getDistrictAvgScore(r) : pctOf(r.Penta3_Given, r.Target_01yr);
+                const c = statusColor(avg);
+                const name = r.Districts.replace(/'/g, "\\'");
+                html += `<div class="dist-item ${ad === r.Districts ? 'active' : ''}" onclick="selectDistrict('${pg}','${name}')">
+            <div class="dist-dot" style="background:${c}"></div><span>${r.Districts}</span>
+        </div>`;
+            });
+            el.innerHTML = html;
+        }
+
+        function filterSidebar(pg, val) {
+            const listId = 'sidebarList-' + pg;
+            const el = document.getElementById(listId);
+            if (!el) return;
+            el.querySelectorAll('.dist-item:not(.all-item)').forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
+            });
+        }
+
+        function selectDistrict(pg, name) {
+            if (pg === 'cmp') { activeDistrict.uwin = name; activeDistrict.hmis = name; activeDistrict.cmp = name; }
+            else activeDistrict[pg] = name;
+
+            if (pg === 'uwin') renderUWIN();
+            if (pg === 'hmis') renderHMIS();
+            if (pg === 'compare') renderCompare();
+            if (pg === 'geo') renderGeo();
+        }
+
+        // ── SORT HELPERS ──
+        function toggleSortChart(pg, id) {
+            const key = pg + '_' + id;
+            const cur = chartSortOrders[key] || 'default';
+            chartSortOrders[key] = cur === 'default' ? 'asc' : cur === 'asc' ? 'desc' : 'default';
+            if (pg === 'uwin') {
+                if (id === 'sess') renderSessionChart();
+                if (id === 'benef') renderBeneficiaryChart();
+                if (id === 'td') renderTDChart();
+                if (id === 'adol') renderAdolChart(); renderHPVChart(); renderAEFIChart();
+                if (id === 'fic') renderUWINFICChart();
+            }
+            if (pg === 'hmis') {
+                if (id === 'fic') renderHMISFICChart();
+                if (id === 'zd') renderHMISZDChart();
+                if (id === 'mr') renderHMISMRChart(); renderHMISAEFIChart();
+                if (id === 'hepb') renderHMISHepBChart();
+                if (id === 'td10') renderHMISTD10Chart();
+            }
+            if (pg === 'cmp') {
+                renderCompareCharts();
+            }
+        }
+        function toggleSortRings(pg) {
+            ringSortOrder = ringSortOrder === 'default' ? 'asc' : ringSortOrder === 'asc' ? 'desc' : 'default';
+            renderRings();
+        }
+        function toggleSortHeatmap(pg) {
+            heatSortOrder = heatSortOrder === 'default' ? 'asc' : heatSortOrder === 'asc' ? 'desc' : 'default';
+            renderHeatmap();
+        }
+        function toggleSortDistTD(pg) {
+            distTDSortOrder = distTDSortOrder === 'default' ? 'asc' : distTDSortOrder === 'asc' ? 'desc' : 'default';
+            renderDistTD();
+        }
+        function toggleSortTrend(pg) {
+            trendSortOrder = trendSortOrder === 'default' ? 'asc' : trendSortOrder === 'asc' ? 'desc' : 'default';
+            renderTrendChart();
+        }
+        function resetTableSort(pg) {
+            sortCol[pg] = null; sortDir[pg] = 1;
+            if (pg === 'uwin') renderUWINTable();
+            if (pg === 'hmis') renderHMISTable();
+            if (pg === 'compare') renderCmpTable();
+        }
+        function getSortedRecords(recs, sortKey, order) {
+            if (order === 'default') return recs;
+            return [...recs].sort((a, b) => {
+                const va = +a[sortKey] || 0, vb = +b[sortKey] || 0;
+                return order === 'asc' ? va - vb : vb - va;
+            });
+        }
+
+        // ── CHART FACTORY ──
+        function dC(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+        function bOpts(yLabel) {
+            const tc = gs('--muted'), gc = gs('--grid-color');
+            return { responsive: true, plugins: { legend: { labels: { color: tc, font: { size: 9, family: 'DM Sans' }, boxWidth: 9, padding: 9 } }, tooltip: { callbacks: { label: c => ' ' + c.dataset.label + ': ' + fmt(c.raw) } } }, scales: { x: { grid: { color: gc }, ticks: { color: tc, font: { size: 8, family: 'Space Mono' }, maxRotation: 35 } }, y: { grid: { color: gc }, ticks: { color: tc, font: { size: 8, family: 'Space Mono' }, callback: v => v >= 1000 ? Math.round(v / 1000) + 'k' : v }, title: { display: !!yLabel, text: yLabel, color: tc, font: { size: 8 } } } } };
+        }
+
+        // ══════════════════════════════════════════════════════
+        //  UWIN PAGE RENDERERS
+        // ══════════════════════════════════════════════════════
+        function renderUWIN() {
+            const r = getUWINRecords();
+            buildSidebar('uwin', D.records);
+            setLabels('u', D.month);
+            renderUWINScorecard(r);
+            renderUWINKPIs(r);
+            renderUWINIndicators(r);
+            renderSessionChart();
+            renderRings();
+            renderBeneficiaryChart();
+            renderDonut();
+            renderTDTargetCards();
+            renderMap('uwin', 'u-mapContainer', 'u-mapLegend');
+            renderDistTD();
+            renderTDChart();
+            renderAdolChart(); renderHPVChart(); renderAEFIChart();
+            renderTrendChart();
+            buildHeatmapTabs();
+            renderHeatmap();
+            renderUWINTable();
+            const sr = document.getElementById('u-sourceRow');
+            if (sr) sr.textContent = 'Source: ' + D.source + ' · ' + D.month + ' · AQ–CS Tracker';
+        }
+
+        function setLabels(prefix, month) {
+            ['sess', 'ring', 'benef', 'donut', 'tdtarget', 'distwise', 'td', 'adol', 'trend', 'heat', 'table'].forEach(id => {
+                const el = document.getElementById(prefix + '-lbl-' + id);
+                if (el) el.textContent = month;
+            });
+        }
+
+        function renderUWINScorecard(r) {
+            const container = document.getElementById('uwin-scorecard'); if (!container) return;
+            const stageScores = ALL_STAGES.map(g => {
+                const vs = VACCINE_GROUPS[g]; let tot = 0, cnt = 0;
+                r.forEach(row => vs.forEach(v => { tot += capDisp(row[v.p] || 0); cnt++; }));
+                return { stage: g, score: cnt ? Math.round(tot / cnt) : 0 };
+            });
+            const overall = Math.round(stageScores.reduce((a, b) => a + b.score, 0) / stageScores.length);
+            const ficArr = r.map(row => row['FIC_%'] || 0);
+            const ficAvg = ficArr.length ? Math.round(ficArr.reduce((a, b) => a + b, 0) / ficArr.length) : 0;
+            const col = statusColor(overall);
+            const grade = overall >= 80 ? 'A' : overall >= 60 ? 'B' : 'C';
+            const bg = overall >= 80 ? 'var(--green-bg)' : overall >= 60 ? 'var(--amber-bg)' : 'var(--red-bg)';
+            const title = activeDistrict.uwin === 'ALL' ? 'Statewide Health Score' : activeDistrict.uwin + ' Health Score';
+            const segs = stageScores.map(s => `<div class="sc-seg"><div class="sc-seg-val" style="color:${statusColor(s.score)}">${s.score}%</div><div class="sc-seg-lbl">${s.stage}</div></div>`).join('');
+            container.innerHTML = `<div class="scorecard" style="border-left-color:${col}">
+        <div class="sc-top">
+            <div><div class="sc-title">${title} · ${D.month}</div>
+            <div class="sc-sub">Coverage index · 7 age-group stages · Birth Dose → 5-16yr · FIC Avg: <strong style="color:${statusColor(ficAvg)}">${ficAvg}%</strong></div>
+            <div class="sc-formula"><strong>Formula:</strong> Avg(each vaccine % vs monthly target) capped at 100%. Overall = avg of 7 stage scores. FIC = Penta-3 ÷ 0-1yr Target × 100.</div></div>
+            <div class="sc-right"><div class="sc-overall"><div class="sc-oval" style="color:${col}">${overall}%</div><div class="sc-olbl">Overall</div></div>
+            <div class="sc-grade" style="background:${bg};color:${col};border:1px solid ${col}40">${grade}</div></div>
+        </div>
+        <div class="sc-segments">${segs}</div>
+    </div>`;
+        }
+
+        function renderUWINKPIs(r) {
+            const el = document.getElementById('uwin-kpi'); if (!el) return;
+            const sp = sumF(r, 'Session Planned'), sh = sumF(r, 'Session Held'), sr2 = pctOf(sh, sp);
+            const ficAvg = (activeDistrict.uwin === 'ALL' && D.stateRecord && D.stateRecord['FIC_%'] !== undefined) ? D.stateRecord['FIC_%'] : (r.length ? Math.round(r.reduce((a, b) => a + (b['FIC_%'] || 0), 0) / r.length) : 0);
+            const hepbG = sumF(r, 'HepB_Given'), hepbT = sumF(r, 'BD_Target'), hepbP = pctOf(hepbG, hepbT);
+            const zdAvg = (activeDistrict.uwin === 'ALL' && D.stateRecord && D.stateRecord['ZeroDose_%'] !== undefined) ? D.stateRecord['ZeroDose_%'] : (r.length ? Math.round(r.reduce((a, b) => a + (b['ZeroDose_%'] || 0), 0) / r.length) : 0);
+            const mr1G = sumF(r, 'MR1_Given'), mr1T = sumF(r, 'Target_01yr'), mr1P = pctOf(mr1G, mr1T);
+            const mr2G = sumF(r, 'MR2_Given'), mr2P = pctOf(mr2G, mr1T);
+            const td10G = sumF(r, 'TD10_Given'), td10T = sumF(r, 'TD10_Target'), td10P = pctOf(td10G, td10T);
+            const doP1P3 = r.length ? Math.round(r.reduce((a, b) => a + (b['DO_P1P3'] || 0), 0) / r.length) : 0;
+            const kpis = [
+                { label: 'FIC (Full Immunization)', value: ficAvg + '%', sub: 'Penta-3 / 0-1yr Target', icon: '✅', color: statusColor(ficAvg), bar: ficAvg },
+                { label: 'Hep-B Birth Dose', value: fmt(hepbG), sub: `Target: ${fmt(hepbT)} · ${hepbP}%`, icon: '💉', color: statusColor(hepbP), bar: hepbP },
+                { label: 'Zero Dose', value: zdAvg + '%', sub: '(Target − Penta1) / Target', icon: '⚠️', color: zdAvg > 20 ? gs('--red') : zdAvg > 10 ? gs('--amber') : gs('--green'), bar: 100 - zdAvg },
+                { label: 'MR-1 Coverage', value: fmt(mr1G), sub: `${mr1P}% of 0-1yr target`, icon: '🧪', color: statusColor(mr1P), bar: mr1P },
+                { label: 'MR-2 Coverage', value: fmt(mr2G), sub: `${mr2P}% of 0-1yr target`, icon: '🔬', color: statusColor(mr2P), bar: mr2P },
+                { label: 'TD10 Achievement', value: fmt(td10G), sub: `Target: ${fmt(td10T)} · ${td10P}%`, icon: '💊', color: statusColor(td10P), bar: td10P },
+                { label: 'Session Rate', value: sr2 + '%', sub: `${fmt(sh)} held / ${fmt(sp)} planned`, icon: '🩺', color: utilisationColor(sr2), bar: sr2 },
+                { label: 'Dropout P1→P3', value: doP1P3 + '%', sub: 'Penta1 to Penta3 dropout', icon: '📉', color: doP1P3 > 10 ? gs('--red') : doP1P3 > 5 ? gs('--amber') : gs('--green'), bar: 100 - doP1P3 },
+            ];
+            el.innerHTML = kpis.map(k => `<div class="kpi-card" style="--kpi-color:${k.color}">
+        <div class="kpi-icon">${k.icon}</div>
+        <div class="kpi-label">${k.label}</div>
+        <div class="kpi-value">${k.value}</div>
+        <div class="kpi-sub">${k.sub}</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${Math.min(k.bar, 100)}%;background:${k.color}"></div></div>
+    </div>`).join('');
+        }
+
+        function renderUWINIndicators(r) {
+            const el = document.getElementById('uwin-indicators'); if (!el) return;
+            const ficAvg = (activeDistrict.uwin === 'ALL' && D.stateRecord && D.stateRecord['FIC_%'] !== undefined) ? D.stateRecord['FIC_%'] : (r.length ? Math.round(r.reduce((a, b) => a + (b['FIC_%'] || 0), 0) / r.length) : 0);
+            const zdAvg = (activeDistrict.uwin === 'ALL' && D.stateRecord && D.stateRecord['ZeroDose_%'] !== undefined) ? D.stateRecord['ZeroDose_%'] : (r.length ? Math.round(r.reduce((a, b) => a + (b['ZeroDose_%'] || 0), 0) / r.length) : 0);
+            const mr1P = pctOf(sumF(r, 'MR1_Given'), sumF(r, 'Target_01yr'));
+            const mr2P = pctOf(sumF(r, 'MR2_Given'), sumF(r, 'Target_01yr'));
+            const hepbP = pctOf(sumF(r, 'HepB_Given'), sumF(r, 'BD_Target'));
+            const td10P = pctOf(sumF(r, 'TD10_Given'), sumF(r, 'TD10_Target'));
+            const indicators = [
+                { label: 'FIC', pct: ficAvg, icon: '✅' }, { label: 'Zero Dose', pct: zdAvg, icon: '⚠️', invert: true },
+                { label: 'Hep-B BD', pct: hepbP, icon: '💉' }, { label: 'MR-1', pct: mr1P, icon: '🧪' },
+                { label: 'MR-2', pct: mr2P, icon: '🔬' }, { label: 'TD10', pct: td10P, icon: '💊' }
+            ];
+            el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;">
+    ${indicators.map(ind => {
+                const col = ind.invert ? (ind.pct > 20 ? gs('--red') : ind.pct > 10 ? gs('--amber') : gs('--green')) : statusColor(ind.pct);
+                return `<div class="chart-card" style="padding:10px 12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                <span style="font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;">${ind.label}</span>
+                <span style="font-size:14px;">${ind.icon}</span>
+            </div>
+            <div style="font-size:20px;font-weight:700;font-family:'Space Mono',monospace;color:${col}">${ind.pct}%</div>
+            <div style="height:4px;background:var(--surface2);border-radius:2px;margin-top:5px;overflow:hidden;">
+                <div style="height:100%;width:${Math.min(ind.pct, 100)}%;background:${col};border-radius:2px;"></div>
+            </div>
+        </div>`;
+            }).join('')}
+    </div>`;
+        }
+
+        // ── UWIN CHARTS ──
+        function renderSessionChart() {
+            dC('u-sess');
+            let r = getUWINRecords();
+            r = getSortedRecords(r, 'Session Held', chartSortOrders['uwin_sess'] || 'default');
+            charts['u-sess'] = new Chart(document.getElementById('u-sessionChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'Planned', data: r.map(x => x['Session Planned']), backgroundColor: 'rgba(100,130,200,.18)', borderColor: gs('--accent'), borderWidth: 1.5, borderRadius: 3 },
+                        { label: 'Held', data: r.map(x => x['Session Held']), backgroundColor: r.map(x => statusColor(pctOf(x['Session Held'], x['Session Planned'])) + '30'), borderColor: r.map(x => statusColor(pctOf(x['Session Held'], x['Session Planned']))), borderWidth: 1.5, borderRadius: 3 }
+                    ]
+                }, options: { ...bOpts('Sessions'), maintainAspectRatio: true }
+            });
+        }
+
+        function renderRings() {
+            let r = getUWINRecords();
+            if (ringSortOrder !== 'default') r = [...r].sort((a, b) => {
+                const pa = pctOf(a['Session Held'], a['Session Planned']), pb = pctOf(b['Session Held'], b['Session Planned']);
+                return ringSortOrder === 'asc' ? pa - pb : pb - pa;
+            });
+            const el = document.getElementById('u-ringWrap'); if (!el) return;
+            const circ = 2 * Math.PI * 16;
+            el.innerHTML = r.map(x => {
+                const p = pctOf(x['Session Held'], x['Session Planned']), c = utilisationColor(p);
+                return `<div class="ring-item"><svg class="ring" width="38" height="38" viewBox="0 0 38 38"><circle class="rbg" cx="19" cy="19" r="16"/><circle class="rfill" cx="19" cy="19" r="16" stroke="${c}" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${(circ * (1 - p / 100)).toFixed(1)}"/></svg><div class="ring-val" style="color:${c}">${p}%</div><div class="ring-label">${shortD(x.Districts)}</div></div>`;
+            }).join('');
+        }
+
+        function renderBeneficiaryChart() {
+            dC('u-benef');
+            let r = getSortedRecords(getUWINRecords(), 'Number of Infants (0-1 year) vaccinated', chartSortOrders['uwin_benef'] || 'default');
+            charts['u-benef'] = new Chart(document.getElementById('u-beneficiaryChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'Pregnant Women', data: r.map(x => x['Number of Pregnant Women vaccinated']), backgroundColor: gs('--amber'), borderRadius: 2, stack: 'a' },
+                        { label: 'Infants 0–1yr', data: r.map(x => x['Number of Infants (0-1 year) vaccinated']), backgroundColor: gs('--accent'), borderRadius: 2, stack: 'a' },
+                        { label: 'Children >1yr', data: r.map(x => x['Number of Children (>1 year) vaccinated']), backgroundColor: '#8b5cf6', borderRadius: 2, stack: 'a' },
+                        { label: 'Adolescents', data: r.map(x => x['Number of Adolescents Vaccinated']), backgroundColor: gs('--green'), borderRadius: 2, stack: 'a' },
+                    ]
+                }, options: bOpts('Count')
+            });
+        }
+
+        function renderDonut() {
+            dC('u-donut');
+            const r = getUWINRecords();
+            charts['u-donut'] = new Chart(document.getElementById('u-donutChart').getContext('2d'), {
+                type: 'doughnut', data: {
+                    labels: ['Pregnant Women', 'Infants 0–1yr', 'Children >1yr', 'Adolescents'],
+                    datasets: [{
+                        data: ['Number of Pregnant Women vaccinated', 'Number of Infants (0-1 year) vaccinated', 'Number of Children (>1 year) vaccinated', 'Number of Adolescents Vaccinated'].map(c => sumF(r, c)),
+                        backgroundColor: [gs('--amber'), gs('--accent'), '#8b5cf6', gs('--green')], borderColor: gs('--surface'), borderWidth: 2, hoverOffset: 7
+                    }]
+                }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: gs('--muted'), font: { size: 9, family: 'DM Sans' }, padding: 9 } }, tooltip: { callbacks: { label: c => ' ' + c.label + ': ' + fmt(c.raw) } } } }
+            });
+        }
+
+        function renderTrendChart() {
+            dC('u-trend');
+            const r = getUWINRecords();
+            let stageData = ALL_STAGES.map(g => {
+                const vs = VACCINE_GROUPS[g]; let tot = 0, cnt = 0;
+                r.forEach(row => vs.forEach(v => { tot += capDisp(row[v.p] || 0); cnt++; }));
+                return { stage: g, score: cnt ? Math.round(tot / cnt) : 0 };
+            });
+            if (trendSortOrder === 'asc') stageData.sort((a, b) => a.score - b.score);
+            else if (trendSortOrder === 'desc') stageData.sort((a, b) => b.score - a.score);
+            const labels = stageData.map(s => s.stage), vals = stageData.map(s => s.score);
+            const note = document.getElementById('u-trendCalcNote');
+            if (note) note.innerHTML = stageData.map(s => `<strong>${s.stage}</strong>: avg(${VACCINE_GROUPS[s.stage]?.map(v => v.l + '%').join('+') || ''}) = ${s.score}%`).join(' | ');
+            const ctx = document.getElementById('u-trendChart').getContext('2d');
+            charts['u-trend'] = new Chart(ctx, {
+                type: 'line', data: {
+                    labels, datasets: [{
+                        label: D.month + ' Avg Coverage %', data: vals, fill: true,
+                        backgroundColor: ctx2 => { const g = ctx2.chart.ctx.createLinearGradient(0, 0, 0, 180); g.addColorStop(0, 'rgba(59,110,240,.15)'); g.addColorStop(1, 'rgba(59,110,240,0)'); return g; },
+                        pointBackgroundColor: vals.map(v => statusColor(v)), pointBorderColor: gs('--surface'), pointBorderWidth: 2, pointRadius: 5,
+                        segment: { borderColor: ctx2 => statusColor(ctx2.p1.parsed.y) }, borderWidth: 2.5, tension: .3
+                    }]
+                }, options: { responsive: true, plugins: { legend: { labels: { color: gs('--muted'), font: { size: 9 } } }, tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw}%` } } }, scales: { x: { grid: { display: false }, ticks: { color: gs('--muted'), font: { size: 9, family: 'Space Mono' } } }, y: { min: 0, max: 100, grid: { color: gs('--grid-color') }, ticks: { color: gs('--muted'), font: { size: 9, family: 'Space Mono' }, callback: v => v + '%' } } } }
+            });
+        }
+
+        function renderTDChart() {
+            dC('u-td');
+            let r = getSortedRecords(getUWINRecords(), 'Number of Women vaccinated with Td-1', chartSortOrders['uwin_td'] || 'default');
+            charts['u-td'] = new Chart(document.getElementById('u-tdChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'Td-1', data: r.map(x => x['Number of Women vaccinated with Td-1']), backgroundColor: gs('--green'), borderRadius: 2 },
+                        { label: 'Td-2', data: r.map(x => x['Number of Women vaccinated with Td-2']), backgroundColor: gs('--accent'), borderRadius: 2 },
+                        { label: 'Td-Booster', data: r.map(x => x['Number of Women vaccinated with Td-Booster']), backgroundColor: gs('--amber'), borderRadius: 2 },
+                    ]
+                }, options: bOpts('Count')
+            });
+        }
+
+        function renderAdolChart() {
+            dC('u-adol');
+            let r = getSortedRecords(getUWINRecords(), 'TD10_Given', chartSortOrders['uwin_adol'] || 'default');
+            charts['u-adol'] = new Chart(document.getElementById('u-adolChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'TD10 Given', data: r.map(x => x.TD10_Given), backgroundColor: gs('--accent'), borderRadius: 2 },
+                        { label: 'TD10 Target', data: r.map(x => x.TD10_Target), backgroundColor: 'rgba(100,130,200,.15)', borderColor: gs('--accent'), borderWidth: 1, borderRadius: 2 },
+                        { label: 'TD16 Given', data: r.map(x => x.TD16_Given), backgroundColor: gs('--accent2'), borderRadius: 2 },
+                        { label: 'TD16 Target', data: r.map(x => x.TD16_Target), backgroundColor: 'rgba(124,58,237,.12)', borderColor: gs('--accent2'), borderWidth: 1, borderRadius: 2 },
+                    ]
+                }, options: bOpts('Count')
+            });
+        }
+
+        function renderTDTargetCards() {
+            const r = getUWINRecords();
+            const td10G = sumF(r, 'TD10_Given'), td10T = sumF(r, 'TD10_Target');
+            const td16G = sumF(r, 'TD16_Given'), td16T = sumF(r, 'TD16_Target');
+            const p10 = Math.min(pctOf(td10G, td10T), 100), p16 = Math.min(pctOf(td16G, td16T), 100);
+            const c10 = statusColor(p10), c16 = statusColor(p16);
+            const chipEl = document.getElementById('u-td10chip');
+            if (chipEl) chipEl.outerHTML = `<span class="chip ${ragClass(p10)}" id="u-td10chip">● ${p10}%</span>`;
+            const cont = document.getElementById('u-td1016content'); if (!cont) return;
+            cont.innerHTML = `<div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:700;color:var(--text);margin-bottom:8px;">🎯 TD10 — Monthly Achievement</div>
+        <div class="td-row"><div class="td-lbl">Given</div><div class="td-bar-wrap"><div class="td-bar" style="width:${p10}%;background:${c10}"></div></div><div class="td-val" style="color:${c10}">${p10}%</div></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:4px;">
+            <span>Given: <strong style="color:${c10}">${fmt(td10G)}</strong></span><span>Target: <strong>${fmt(td10T)}</strong></span>
+            <span>${td10G > td10T ? `Surplus: +${fmt(td10G - td10T)}` : `Gap: -${fmt(td10T - td10G)}`}</span>
+        </div>
+    </div>
+    <div>
+        <div style="font-size:10px;font-weight:700;color:var(--text);margin-bottom:8px;">🎯 TD16 — Monthly Achievement</div>
+        <div class="td-row"><div class="td-lbl">Given</div><div class="td-bar-wrap"><div class="td-bar" style="width:${p16}%;background:${c16}"></div></div><div class="td-val" style="color:${c16}">${p16}%</div></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:4px;">
+            <span>Given: <strong style="color:${c16}">${fmt(td16G)}</strong></span><span>Target: <strong>${fmt(td16T)}</strong></span>
+            <span>${td16G > td16T ? `Surplus: +${fmt(td16G - td16T)}` : `Gap: -${fmt(td16T - td16G)}`}</span>
+        </div>
+    </div>`;
+        }
+
+        function renderDistTD() {
+            let r = getUWINRecords();
+            if (distTDSortOrder === 'asc') r = [...r].sort((a, b) => pctOf(a.TD10_Given, a.TD10_Target) - pctOf(b.TD10_Given, b.TD10_Target));
+            else if (distTDSortOrder === 'desc') r = [...r].sort((a, b) => pctOf(b.TD10_Given, b.TD10_Target) - pctOf(a.TD10_Given, a.TD10_Target));
+            const el = document.getElementById('u-distTDRows'); if (!el) return;
+            el.innerHTML = r.map(row => {
+                const p10 = Math.min(pctOf(row.TD10_Given, row.TD10_Target), 100), p16 = Math.min(pctOf(row.TD16_Given, row.TD16_Target), 100);
+                const c10 = statusColor(p10), c16 = statusColor(p16);
+                return `<div class="dist-td-row">
+            <div class="dist-td-name">${shortD(row.Districts)}</div>
+            <div class="dist-td-bar-wrap"><div class="dist-td-bar" style="width:${p10}%;background:${c10}"></div></div>
+            <div class="dist-td-pct" style="color:${c10}">${p10}%</div>
+            <div class="dist-td-bar-wrap"><div class="dist-td-bar" style="width:${p16}%;background:${c16}"></div></div>
+            <div class="dist-td-pct" style="color:${c16}">${p16}%</div>
+        </div>`;
+            }).join('');
+        }
+
+        // ── HEATMAP ──
+        function buildHeatmapTabs() {
+            const el = document.getElementById('u-heatmapTabs'); if (!el) return;
+            el.innerHTML = Object.keys(VACCINE_GROUPS).map(g => `<button class="tab-btn${g === activeHeatGroup ? ' active' : ''}" onclick="switchHeat('${g}')">${g}</button>`).join('');
+        }
+        function switchHeat(g) {
+            activeHeatGroup = g;
+            document.querySelectorAll('#u-heatmapTabs .tab-btn').forEach(b => b.classList.toggle('active', b.textContent === g));
+            renderHeatmap();
+        }
+        function renderHeatmap() {
+            const vs = VACCINE_GROUPS[activeHeatGroup]; if (!vs) return;
+            let r = getUWINRecords();
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (heatSortOrder !== 'default') {
+                const avg = row => vs.reduce((a, v) => a + capDisp(row[v.p] || 0), 0) / vs.length;
+                r = [...r].sort((a, b) => heatSortOrder === 'asc' ? avg(a) - avg(b) : avg(b) - avg(a));
+            }
+            const cols = vs.length;
+            const gStyle = `display:grid;grid-template-columns:110px repeat(${cols},minmax(60px,1fr));gap:3px;align-items:center;min-width:${110 + cols * 60}px;`;
+            let html = `<div style="${gStyle} margin-bottom:5px;"><div></div>${vs.map(v => `<div class="hm-col-label">${v.l}</div>`).join('')}</div>`;
+            r.forEach(row => {
+                html += `<div style="${gStyle}" class="hm-row-wrapper"><div class="hm-label">${shortD(row.Districts)}</div>`;
+                vs.forEach(v => {
+                    const pRatio = row[v.p] || 0, p = Math.round(Math.min(pRatio * 100, 100));
+                    let bg, border, textC;
+                    if (!isDark) {
+                        bg = p >= 80 ? `rgba(5,150,105,${.18 + p / 100 * .5})` : p >= 60 ? `rgba(217,119,6,${.18 + p / 100 * .5})` : `rgba(220,38,38,${.1 + p / 100 * .45})`;
+                        border = p >= 80 ? '1px solid rgba(5,150,105,.4)' : p >= 60 ? '1px solid rgba(217,119,6,.4)' : '1px solid rgba(220,38,38,.4)';
+                        textC = p > 45 ? '#fff' : '#0f1c2e';
+                    } else {
+                        bg = p >= 80 ? `rgba(52,211,153,${.2 + p / 100 * .5})` : p >= 60 ? `rgba(251,191,36,${.2 + p / 100 * .5})` : `rgba(248,113,113,${.15 + p / 100 * .45})`;
+                        border = p >= 80 ? '1px solid rgba(52,211,153,.35)' : p >= 60 ? '1px solid rgba(251,191,36,.35)' : '1px solid rgba(248,113,113,.3)';
+                        textC = p > 50 ? '#0f1c2e' : '#e8f0fe';
+                    }
+                    const rawVal = row[v.k] || 0;
+                    const tgt = activeHeatGroup === 'Birth Dose' ? row.BD_Target : row.Target_01yr;
+                    html += `<div class="hm-cell" style="background:${bg};color:${textC};border:${border};">${p}%<div class="tip">${row.Districts}<br/>${v.l}: ${fmt(rawVal)} given<br/>Target: ${fmt(tgt || 0)} · Ach: ${p}%</div></div>`;
+                });
+                html += `</div>`;
+            });
+            const container = document.getElementById('u-heatmapContainer'); if (container) container.innerHTML = html;
+        }
+
+        // ── UWIN TABLE ──
+        function renderUWINTable() {
+            const el_h = document.getElementById('u-tableHead'), el_b = document.getElementById('u-tableBody'); if (!el_h || !el_b) return;
+            let r = D.records.map(computeRow);
+            if (activeDistrict.uwin !== 'ALL') r = r.filter(x => x.Districts === activeDistrict.uwin);
+            const lbl = document.getElementById('u-tableDistrictLabel');
+            if (lbl) lbl.textContent = activeDistrict.uwin === 'ALL' ? 'All Districts' : activeDistrict.uwin;
+            const sc = sortCol.uwin, sd = sortDir.uwin;
+            el_h.innerHTML = `<tr>${TABLE_COLS_UWIN.map(c => `<th class="${sc === c.key ? 'sorted' : ''}" onclick="sortUWINTable('${c.key}')">${c.label}${sc === c.key ? (sd > 0 ? ' ↑' : ' ↓') : ''}</th>`).join('')}</tr>`;
+            if (sc) r.sort((a, b) => { const va = +a[sc] || 0, vb = +b[sc] || 0; return va > vb ? sd : va < vb ? -sd : 0; });
+            el_b.innerHTML = r.map(row => `<tr>${TABLE_COLS_UWIN.map((c, i) => {
+                if (i === 0) return `<td class="td-dist">${row[c.key]}</td>`;
+                const val = +row[c.key] || 0;
+                if (c.computed) {
+                    const p = Math.min(Math.abs(val), 100);
+                    const isNeg = ['ZeroDose_%', 'DO_P1P3', 'DO_P3MR1', 'DO_MR1MR2'].includes(c.key);
+                    const col = isNeg ? (val > 20 ? gs('--red') : val > 10 ? gs('--amber') : gs('--green')) : statusColor(p);
+                    return `<td><div class="pct-cell"><div class="pct-bar-wrap"><div class="pct-bar" style="width:${p}%;background:${col}"></div></div><div class="pct-val" style="color:${col}">${val}%</div><div class="tip">${row.Districts} · ${c.label}: ${val}%</div></div></td>`;
+                }
+                const tgtVal = c.tKey ? +row[c.tKey] || 0 : 1;
+                const p = tgtVal ? Math.min(Math.round(val / tgtVal * 100), 100) : 0;
+                const bc = statusColor(p);
+                return `<td><div class="pct-cell"><div class="pct-bar-wrap"><div class="pct-bar" style="width:${p}%;background:${bc}"></div></div><div class="pct-val" style="color:${bc}">${p}%</div><div class="tip">${row.Districts} · ${c.label}: ${fmt(val)}${c.tKey ? ` / Target: ${fmt(tgtVal)}` : ''}</div></div></td>`;
+            }).join('')}</tr>`).join('');
+        }
+        function sortUWINTable(col) { sortDir.uwin = sortCol.uwin === col ? -sortDir.uwin : 1; sortCol.uwin = col; renderUWINTable(); }
+
+        // ══════════════════════════════════════════════════════
+        //  LEAFLET MAP (shared polygon map)
+        // ══════════════════════════════════════════════════════
+        function fetchGeojson() {
+            if (!geojsonPromise) {
+                geojsonPromise = fetch('https://cdn.jsdelivr.net/gh/shuklaneerajdev/IndiaStateTopojsonFiles@master/Uttarakhand.geojson')
+                    .then(r => r.ok ? r.json() : null).catch(() => null);
+            }
+            return geojsonPromise;
+        }
+
+        async function renderMap(pg, containerId, legendId) {
+            if (pg === 'geo') return; // Handled separately
+
+            const container = document.getElementById(containerId); if (!container) return;
+            if (!leafletMaps[pg]) {
+                leafletMaps[pg] = L.map(containerId, { zoomControl: false, attributionControl: false, dragging: true, scrollWheelZoom: true, doubleClickZoom: true });
+            }
+            const lmap = leafletMaps[pg];
+            if (!window.geojsonData) {
+                window.geojsonData = await fetchGeojson();
+                if (!window.geojsonData) {
+                    container.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--muted)'>Map unavailable — check network</div>";
+                    return;
+                }
+            }
+
+            let records = pg === 'uwin' ? getUWINRecords() : getHMISRecords();
+            if (pg === 'compare') records = getHMISRecords();
+            const distMap = {};
+            records.forEach(row => {
+                const p10 = Math.min(pctOf(row.TD10_Given, row.TD10_Target), 100);
+                const ficPct = row.Target_01yr ? Math.min(Math.round(row.Penta3_Given / row.Target_01yr * 100), 100) : 0;
+                distMap[row.Districts.toUpperCase().trim()] = { p10, ficPct, rowName: row.Districts, td10g: row.TD10_Given || 0, td10t: row.TD10_Target || 0 };
+            });
+
+            const nameMatch = (gn) => {
+                if (!gn) return '';
+                const g = gn.toUpperCase().trim();
+                if (g.includes('PAURI') || g === 'GARHWAL') return 'PAURI GARHWAL';
+                if (g.includes('TEHRI')) return 'TEHRI GARHWAL';
+                if (g.includes('UDHAM') || g.includes('U.S.')) return 'UDHAM SINGH NAGAR';
+                if (g.includes('RUDRA')) return 'RUDRA PRAYAG';
+                if (g.includes('UTTAR') && g.includes('KASHI')) return 'UTTAR KASHI';
+                if (g === 'HARDWAR' || g === 'HARIDWAR') return 'HARIDWAR';
+                for (let key of Object.keys(distMap)) { if (key.includes(g) || g.includes(key)) return key; }
+                return g;
+            };
+
+            function getRagFill(p) {
+                if (p === undefined || p === null) return 'var(--surface2)';
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                if (p >= 80) return isDark ? 'rgba(52,211,153,0.85)' : 'rgba(5,150,105,0.75)';
+                if (p >= 60) return isDark ? 'rgba(251,191,36,0.85)' : 'rgba(217,119,6,0.75)';
+                return isDark ? 'rgba(248,113,113,0.85)' : 'rgba(220,38,38,0.65)';
+            }
+
+            if (geojsonLayers[pg]) { lmap.removeLayer(geojsonLayers[pg]); }
+
+            geojsonLayers[pg] = L.geoJSON(window.geojsonData, {
+                style: feature => {
+                    const gn = feature.properties.Dist_Name || feature.properties.dtname || feature.properties.DISTRICT || feature.properties.District || feature.properties.NAME_2 || feature.properties.name || '';
+                    const mn = nameMatch(gn);
+                    const dData = distMap[mn];
+                    const val = pg === 'compare' ? dData?.ficPct : dData?.p10;
+                    return { fillColor: getRagFill(val), weight: 1.2, opacity: 1, color: gs('--surface') || '#fff', fillOpacity: 1 };
+                },
+                onEachFeature: (feature, layer) => {
+                    const gn = feature.properties.Dist_Name || feature.properties.dtname || feature.properties.DISTRICT || feature.properties.District || feature.properties.NAME_2 || feature.properties.name || 'Unknown';
+                    const mn = nameMatch(gn);
+                    const dData = distMap[mn];
+                    const val = pg === 'compare' ? dData?.ficPct : dData?.p10;
+                    const valStr = val != null ? val + '%' : 'N/A';
+                    const rawName = dData ? dData.rowName : gn;
+                    const lbl = pg === 'compare' ? 'FIC' : 'TD10';
+                    layer.bindTooltip(`<div style="text-align:center;"><b>${rawName}</b><br>${lbl}: ${valStr}${dData && pg !== 'compare' ? `<br>Given: ${fmt(dData.td10g)} | Target: ${fmt(dData.td10t)}` : ''}`, { direction: 'auto', className: 'leaflet-custom-tooltip' });
+                    layer.on({
+                        mouseover: e => { e.target.setStyle({ weight: 2.5, color: gs('--text') || '#000' }); if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) e.target.bringToFront(); },
+                        mouseout: e => geojsonLayers[pg].resetStyle(e.target),
+                        click: () => { if (dData) selectDistrict(pg, dData.rowName); }
+                    });
+                }
+            }).addTo(lmap);
+
+            setTimeout(() => { lmap.invalidateSize(); lmap.fitBounds(geojsonLayers[pg].getBounds(), { padding: [10, 10] }); }, 100);
+
+            const legEl = document.getElementById(legendId); if (legEl) {
+                legEl.innerHTML = [
+                    { c: 'rgba(5,150,105,0.75)', l: '≥80% On Track' }, { c: 'rgba(217,119,6,0.75)', l: '60–80% Attention' }, { c: 'rgba(220,38,38,0.65)', l: '<60% Critical' }
+                ].map(i => `<div class="map-leg-item"><div class="map-leg-dot" style="background:${i.c}"></div>${i.l}</div>`).join('');
+            }
+        }
+
+
+        function renderHPVChart() {
+            dC('u-hpv');
+            let r = getSortedRecords(getUWINRecords(), 'HPV_Given', chartSortOrders['uwin_hpv'] || 'default');
+            charts['u-hpv'] = new Chart(document.getElementById('u-hpvChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'HPV Given', data: r.map(x => x.HPV_Given || 0), backgroundColor: gs('--accent') + 'aa', borderRadius: 3 }
+                    ]
+                }, options: bOpts('Count')
+            });
+        }
+
+        function renderAEFIChart() {
+            dC('u-aefi');
+            let r = getSortedRecords(getUWINRecords(), 'AEFI', chartSortOrders['uwin_aefi'] || 'default');
+            charts['u-aefi'] = new Chart(document.getElementById('u-aefiChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'AEFI Cases (SAFEVAC)', data: r.map(x => x.AEFI || 0), backgroundColor: gs('--red') + 'aa', borderRadius: 3 }
+                    ]
+                }, options: bOpts('Count')
+            });
+        }
+
+        function renderHMISAEFIChart() {
+            dC('h-aefi');
+            let r = getSortedRecords(getHMISRecords(), 'AEFI', chartSortOrders['hmis_aefi'] || 'default');
+            charts['h-aefi'] = new Chart(document.getElementById('h-aefiChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'AEFI Cases (HMIS)', data: r.map(x => x.AEFI || 0), backgroundColor: gs('--red') + 'aa', borderRadius: 3 }
+                    ]
+                }, options: bOpts('Count')
+            });
+        }
+
+        // ══════════════════════════════════════════════════════
+        //  HMIS PAGE RENDERERS
+        // ══════════════════════════════════════════════════════
+        function renderHMIS() {
+            const r = getHMISRecords();
+            buildSidebar('hmis', HMIS.records);
+            ['fic', 'zd', 'mr', 'hepb', 'td10'].forEach(id => {
+                const el = document.getElementById('h-lbl-' + id); if (el) el.textContent = HMIS.month;
+            });
+            renderHMISKPIs(r);
+            renderHMISIndicators(r);
+            renderHMISFICChart();
+            renderHMISZDChart();
+            renderHMISMRChart(); renderHMISAEFIChart();
+            renderHMISHepBChart();
+            renderHMISTD10Chart();
+            renderMap('hmis', 'h-mapContainer', 'h-mapLegend');
+            renderHMISTable();
+            const sr = document.getElementById('h-sourceRow'); if (sr) sr.textContent = 'Source: ' + HMIS.source;
+        }
+
+        function renderHMISKPIs(r) {
+            const el = document.getElementById('hmis-kpi'); if (!el) return;
+            const ficAvg = (activeDistrict.uwin === 'ALL' && D.stateRecord && D.stateRecord['FIC_%'] !== undefined) ? D.stateRecord['FIC_%'] : (r.length ? Math.round(r.reduce((a, b) => a + (b['FIC_%'] || 0), 0) / r.length) : 0);
+            const zdAvg = (activeDistrict.uwin === 'ALL' && D.stateRecord && D.stateRecord['ZeroDose_%'] !== undefined) ? D.stateRecord['ZeroDose_%'] : (r.length ? Math.round(r.reduce((a, b) => a + (b['ZeroDose_%'] || 0), 0) / r.length) : 0);
+            const hepbP = pctOf(sumF(r, 'HepB_Given'), sumF(r, 'BD_Target'));
+            const mr1P = pctOf(sumF(r, 'MR1_Given'), sumF(r, 'Target_01yr'));
+            const mr2P = pctOf(sumF(r, 'MR2_Given'), sumF(r, 'Target_01yr'));
+            const td10P = pctOf(sumF(r, 'TD10_Given'), sumF(r, 'TD10_Target'));
+            const doP1P3 = r.length ? Math.round(r.reduce((a, b) => a + (b['DO_P1P3'] || 0), 0) / r.length) : 0;
+            const kpis = [
+                { label: 'FIC (HMIS)', value: ficAvg + '%', sub: 'Penta-3 / 0-1yr Target', icon: '✅', color: statusColor(ficAvg), bar: ficAvg },
+                { label: 'Hep-B BD (HMIS)', value: fmt(sumF(r, 'HepB_Given')), sub: `${hepbP}% vs BD target`, icon: '💉', color: statusColor(hepbP), bar: hepbP },
+                { label: 'Zero Dose (HMIS)', value: zdAvg + '%', sub: 'Unvaccinated children', icon: '⚠️', color: zdAvg > 20 ? gs('--red') : zdAvg > 10 ? gs('--amber') : gs('--green'), bar: 100 - zdAvg },
+                { label: 'MR-1 (HMIS)', value: fmt(sumF(r, 'MR1_Given')), sub: `${mr1P}% of 0-1yr target`, icon: '🧪', color: statusColor(mr1P), bar: mr1P },
+                { label: 'MR-2 (HMIS)', value: fmt(sumF(r, 'MR2_Given')), sub: `${mr2P}% of 0-1yr target`, icon: '🔬', color: statusColor(mr2P), bar: mr2P },
+                { label: 'TD10 (HMIS)', value: fmt(sumF(r, 'TD10_Given')), sub: `${td10P}% of TD10 target`, icon: '💊', color: statusColor(td10P), bar: td10P },
+                { label: 'Dropout P1→P3', value: doP1P3 + '%', sub: 'Penta1→Penta3 dropout', icon: '📉', color: doP1P3 > 10 ? gs('--red') : doP1P3 > 5 ? gs('--amber') : gs('--green'), bar: 100 - doP1P3 },
+            ];
+            el.innerHTML = kpis.map(k => `<div class="kpi-card" style="--kpi-color:${k.color}"><div class="kpi-icon">${k.icon}</div><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div><div class="kpi-sub">${k.sub}</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:${Math.min(k.bar, 100)}%;background:${k.color}"></div></div></div>`).join('');
+        }
+
+        function renderHMISIndicators(r) {
+            const el = document.getElementById('hmis-indicators'); if (!el) return;
+            const ficAvg = (activeDistrict.uwin === 'ALL' && D.stateRecord && D.stateRecord['FIC_%'] !== undefined) ? D.stateRecord['FIC_%'] : (r.length ? Math.round(r.reduce((a, b) => a + (b['FIC_%'] || 0), 0) / r.length) : 0);
+            const zdAvg = (activeDistrict.uwin === 'ALL' && D.stateRecord && D.stateRecord['ZeroDose_%'] !== undefined) ? D.stateRecord['ZeroDose_%'] : (r.length ? Math.round(r.reduce((a, b) => a + (b['ZeroDose_%'] || 0), 0) / r.length) : 0);
+            const hepbP = pctOf(sumF(r, 'HepB_Given'), sumF(r, 'BD_Target'));
+            const mr1P = pctOf(sumF(r, 'MR1_Given'), sumF(r, 'Target_01yr'));
+            const mr2P = pctOf(sumF(r, 'MR2_Given'), sumF(r, 'Target_01yr'));
+            const td10P = pctOf(sumF(r, 'TD10_Given'), sumF(r, 'TD10_Target'));
+            const indicators = [{ label: 'FIC', pct: ficAvg, icon: '✅' }, { label: 'Zero Dose', pct: zdAvg, icon: '⚠️', invert: true }, { label: 'Hep-B BD', pct: hepbP, icon: '💉' }, { label: 'MR-1', pct: mr1P, icon: '🧪' }, { label: 'MR-2', pct: mr2P, icon: '🔬' }, { label: 'TD10', pct: td10P, icon: '💊' }];
+            el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;">${indicators.map(ind => {
+                const col = ind.invert ? (ind.pct > 20 ? gs('--red') : ind.pct > 10 ? gs('--amber') : gs('--green')) : statusColor(ind.pct);
+                return `<div class="chart-card" style="padding:10px 12px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;"><span style="font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;">${ind.label}</span><span style="font-size:14px;">${ind.icon}</span></div><div style="font-size:20px;font-weight:700;font-family:'Space Mono',monospace;color:${col}">${ind.pct}%</div><div style="height:4px;background:var(--surface2);border-radius:2px;margin-top:5px;overflow:hidden;"><div style="height:100%;width:${Math.min(ind.pct, 100)}%;background:${col};border-radius:2px;"></div></div></div>`;
+            }).join('')}</div>`;
+        }
+
+        function renderHMISFICChart() {
+            dC('h-fic');
+            let r = getSortedRecords(getHMISRecords(), 'FIC_%', chartSortOrders['hmis_fic'] || 'default');
+            const ficVals = r.map(x => x['FIC_%'] || 0);
+            charts['h-fic'] = new Chart(document.getElementById('h-ficChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'FIC %', data: ficVals, backgroundColor: ficVals.map(v => statusColor(v) + '99'), borderColor: ficVals.map(v => statusColor(v)), borderWidth: 1.5, borderRadius: 4 }
+                    ]
+                }, options: { ...bOpts('%'), plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderHMISZDChart() {
+            dC('h-zd');
+            let r = getSortedRecords(getHMISRecords(), 'ZeroDose_%', chartSortOrders['hmis_zd'] || 'default');
+            const zdVals = r.map(x => x['ZeroDose_%'] || 0);
+            charts['h-zd'] = new Chart(document.getElementById('h-zdChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'Zero Dose %', data: zdVals, backgroundColor: zdVals.map(v => v > 20 ? gs('--red') + '99' : v > 10 ? gs('--amber') + '99' : gs('--green') + '99'), borderColor: zdVals.map(v => v > 20 ? gs('--red') : v > 10 ? gs('--amber') : gs('--green')), borderWidth: 1.5, borderRadius: 4 }
+                    ]
+                }, options: { ...bOpts('%'), plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderHMISMRChart() {
+            dC('h-mr');
+            let r = getSortedRecords(getHMISRecords(), 'MR1_Given', chartSortOrders['hmis_mr'] || 'default');
+            charts['h-mr'] = new Chart(document.getElementById('h-mrChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'MR-1', data: r.map(x => x.MR1_Given), backgroundColor: gs('--accent') + 'aa', borderRadius: 3 },
+                        { label: 'MR-2', data: r.map(x => x.MR2_Given), backgroundColor: gs('--accent2') + 'aa', borderRadius: 3 }
+                    ]
+                }, options: bOpts('Count')
+            });
+        }
+
+        function renderHMISHepBChart() {
+            dC('h-hepb');
+            let r = getSortedRecords(getHMISRecords(), 'HepB_Given', chartSortOrders['hmis_hepb'] || 'default');
+            const pcts = r.map(x => pctOf(x.HepB_Given, x.BD_Target));
+            charts['h-hepb'] = new Chart(document.getElementById('h-hepbChart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'HepB %', data: pcts, backgroundColor: pcts.map(v => statusColor(v) + '99'), borderColor: pcts.map(v => statusColor(v)), borderWidth: 1.5, borderRadius: 4 }
+                    ]
+                }, options: { ...bOpts('%'), plugins: { legend: { display: false } } }
+            });
+        }
+
+        function renderHMISTD10Chart() {
+            dC('h-td10');
+            let r = getSortedRecords(getHMISRecords(), 'TD10_Given', chartSortOrders['hmis_td10'] || 'default');
+            charts['h-td10'] = new Chart(document.getElementById('h-td10Chart').getContext('2d'), {
+                type: 'bar', data: {
+                    labels: r.map(x => shortD(x.Districts)), datasets: [
+                        { label: 'TD10 Given', data: r.map(x => x.TD10_Given), backgroundColor: gs('--accent') + 'aa', borderRadius: 3 },
+                        { label: 'TD10 Target', data: r.map(x => x.TD10_Target), backgroundColor: 'rgba(100,130,200,.12)', borderColor: gs('--accent'), borderWidth: 1, borderRadius: 3 }
+                    ]
+                }, options: bOpts('Count')
+            });
+        }
+
+        function renderHMISTable() {
+            const el_h = document.getElementById('h-tableHead'), el_b = document.getElementById('h-tableBody'); if (!el_h || !el_b) return;
+            let r = HMIS.records.map(computeRow);
+            if (activeDistrict.hmis !== 'ALL') r = r.filter(x => x.Districts === activeDistrict.hmis);
+            const lbl = document.getElementById('h-tableDistrictLabel'); if (lbl) lbl.textContent = activeDistrict.hmis === 'ALL' ? 'All Districts' : activeDistrict.hmis;
+            const sc = sortCol.hmis, sd = sortDir.hmis;
+            el_h.innerHTML = `<tr>${TABLE_COLS_HMIS.map(c => `<th class="${sc === c.key ? 'sorted' : ''}" onclick="sortHMISTable('${c.key}')">${c.label}${sc === c.key ? (sd > 0 ? ' ↑' : ' ↓') : ''}</th>`).join('')}</tr>`;
+            if (sc) r.sort((a, b) => { const va = +a[sc] || 0, vb = +b[sc] || 0; return va > vb ? sd : va < vb ? -sd : 0; });
+            el_b.innerHTML = r.map(row => `<tr>${TABLE_COLS_HMIS.map((c, i) => {
+                if (i === 0) return `<td class="td-dist">${row[c.key]}</td>`;
+                const val = +row[c.key] || 0;
+                if (c.computed) {
+                    const p = Math.min(Math.abs(val), 100);
+                    const isNeg = ['ZeroDose_%', 'DO_P1P3'].includes(c.key);
+                    const col = isNeg ? (val > 20 ? gs('--red') : val > 10 ? gs('--amber') : gs('--green')) : statusColor(p);
+                    return `<td><div class="pct-cell"><div class="pct-bar-wrap"><div class="pct-bar" style="width:${p}%;background:${col}"></div></div><div class="pct-val" style="color:${col}">${val}%</div><div class="tip">${row.Districts} · ${c.label}: ${val}%</div></div></td>`;
+                }
+                const tgtVal = c.tKey ? +row[c.tKey] || 0 : 1;
+                const p = tgtVal ? Math.min(Math.round(val / tgtVal * 100), 100) : 0;
+                const bc = statusColor(p);
+                return `<td><div class="pct-cell"><div class="pct-bar-wrap"><div class="pct-bar" style="width:${p}%;background:${bc}"></div></div><div class="pct-val" style="color:${bc}">${p}%</div><div class="tip">${row.Districts} · ${c.label}: ${fmt(val)}${c.tKey ? ` / ${fmt(tgtVal)}` : ''}</div></div></td>`;
+            }).join('')}</tr>`).join('');
+        }
+        function sortHMISTable(col) { sortDir.hmis = sortCol.hmis === col ? -sortDir.hmis : 1; sortCol.hmis = col; renderHMISTable(); }
+
+        // ══════════════════════════════════════════════════════
+        //  COMPARISON PAGE RENDERERS
+        // ══════════════════════════════════════════════════════
+        function renderCompare() {
+            buildSidebar('cmp', UWIN_DATA.records, 'cmp');
+            renderCompareKPIs();
+            renderCompareCharts();
+            renderCompareDistCards();
+            renderCmpTable();
+            renderMap('compare', 'c-mapContainer', 'c-mapLegend');
+        }
+
+        function getCmpData() {
+            // Join UWIN and HMIS by district name
+            const uwinRecs = D.records.map(computeRow);
+            const hmisRecs = HMIS.records.map(computeRow);
+            const adist = activeDistrict.cmp;
+            const matchedDistricts = uwinRecs.filter(u => adist === 'ALL' || u.Districts === adist).map(u => {
+                const h = hmisRecs.find(hh => hh.Districts === u.Districts) || {};
+                const uFIC = u['FIC_%'] || 0, hFIC = h['FIC_%'] || 0;
+                const uZD = u['ZeroDose_%'] || 0, hZD = h['ZeroDose_%'] || 0;
+                const uMR1 = pctOf(u.MR1_Given, u.Target_01yr), hMR1 = pctOf(h.MR1_Given, h.Target_01yr || u.Target_01yr);
+                const uMR2 = pctOf(u.MR2_Given, u.Target_01yr), hMR2 = pctOf(h.MR2_Given, h.Target_01yr || u.Target_01yr);
+                const uHepB = pctOf(u.HepB_Given, u.BD_Target), hHepB = pctOf(h.HepB_Given, h.BD_Target || u.BD_Target);
+                const uTD10 = pctOf(u.TD10_Given, u.TD10_Target), hTD10 = pctOf(h.TD10_Given, h.TD10_Target || u.TD10_Target);
+                const uDoP1P3 = u['DO_P1P3'] || 0, hDoP1P3 = h['DO_P1P3'] || 0;
+                const uDoP3MR1 = u['DO_P3MR1'] || 0, hDoP3MR1 = h['DO_P3MR1'] || 0;
+                const uDoMR1MR2 = u['DO_MR1MR2'] || 0, hDoMR1MR2 = h['DO_MR1MR2'] || 0;
+                return { dist: u.Districts, uFIC, hFIC, uZD, hZD, uMR1, hMR1, uMR2, hMR2, uHepB, hHepB, uTD10, hTD10, uDoP1P3, hDoP1P3, uDoP3MR1, hDoP3MR1, uDoMR1MR2, hDoMR1MR2 };
+            });
+            return matchedDistricts;
+        }
+
+        function renderCompareKPIs() {
+            const el = document.getElementById('cmp-kpi'); if (!el) return;
+            const data = getCmpData();
+            const avg = (arr, k) => arr.length ? Math.round(arr.reduce((a, b) => a + b[k], 0) / arr.length) : 0;
+            const uFIC = avg(data, 'uFIC'), hFIC = avg(data, 'hFIC');
+            const uTD10 = avg(data, 'uTD10'), hTD10 = avg(data, 'hTD10');
+            const uHepB = avg(data, 'uHepB'), hHepB = avg(data, 'hHepB');
+            const ficGap = uFIC - hFIC;
+            const kpis = [
+                { label: 'FIC — UWIN', value: uFIC + '%', sub: 'Avg across districts', icon: '🩺', color: statusColor(uFIC), bar: uFIC },
+                { label: 'FIC — HMIS', value: hFIC + '%', sub: 'Avg across districts', icon: '🏥', color: statusColor(hFIC), bar: hFIC },
+                { label: 'FIC Gap (UWIN−HMIS)', value: (ficGap >= 0 ? '+' : '') + ficGap + '%', sub: 'Positive = UWIN higher', icon: '📊', color: Math.abs(ficGap) < 5 ? gs('--green') : Math.abs(ficGap) < 15 ? gs('--amber') : gs('--red'), bar: Math.min(Math.abs(ficGap) * 2, 100) },
+                { label: 'HepB — UWIN', value: uHepB + '%', sub: 'Birth dose coverage', icon: '💉', color: statusColor(uHepB), bar: uHepB },
+                { label: 'HepB — HMIS', value: hHepB + '%', sub: 'Birth dose coverage', icon: '💉', color: statusColor(hHepB), bar: hHepB },
+                { label: 'TD10 — UWIN', value: uTD10 + '%', sub: 'Adolescent coverage', icon: '💊', color: statusColor(uTD10), bar: uTD10 },
+                { label: 'TD10 — HMIS', value: hTD10 + '%', sub: 'Adolescent coverage', icon: '💊', color: statusColor(hTD10), bar: hTD10 },
+                { label: 'Districts Compared', value: data.length + '', sub: 'Matched UWIN ↔ HMIS', icon: '📍', color: gs('--accent'), bar: 100 },
+            ];
+            el.innerHTML = kpis.map(k => `<div class="kpi-card" style="--kpi-color:${k.color}"><div class="kpi-icon">${k.icon}</div><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div><div class="kpi-sub">${k.sub}</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:${Math.min(k.bar, 100)}%;background:${k.color}"></div></div></div>`).join('');
+        }
+
+        function buildGroupedBarChart(canvasId, data, labels, uVals, hVals, title) {
+            dC(canvasId);
+            const canvas = document.getElementById(canvasId); if (!canvas) return;
+            charts[canvasId] = new Chart(canvas.getContext('2d'), {
+                type: 'bar', data: {
+                    labels, datasets: [
+                        { label: 'HMIS', data: hVals, backgroundColor: gs('--accent') + '99', borderColor: gs('--accent'), borderWidth: 1.2, borderRadius: 3 },
+                        { label: 'UWIN', data: uVals, backgroundColor: gs('--accent2') + '99', borderColor: gs('--accent2'), borderWidth: 1.2, borderRadius: 3 },
+                    ]
+                }, options: { ...bOpts('%'), plugins: { legend: { display: true, labels: { color: gs('--muted'), font: { size: 9 }, boxWidth: 10, padding: 8 } }, tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw}%` } } } }
+            });
+        }
+
+        function buildGapChart(canvasId, labels, gaps) {
+            dC(canvasId);
+            const canvas = document.getElementById(canvasId); if (!canvas) return;
+            charts[canvasId] = new Chart(canvas.getContext('2d'), {
+                type: 'bar', data: { labels, datasets: [{ label: 'UWIN − HMIS gap', data: gaps, backgroundColor: gaps.map(v => v >= 0 ? gs('--green') + '99' : gs('--red') + '99'), borderColor: gaps.map(v => v >= 0 ? gs('--green') : gs('--red')), borderWidth: 1.2, borderRadius: 3 }] },
+                options: { ...bOpts('Gap %'), plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `Gap: ${c.raw >= 0 ? '+' : ''}${c.raw}%` } } } }
+            });
+        }
+
+        function renderCompareCharts() {
+            const data = getCmpData();
+            const labels = data.map(d => shortD(d.dist));
+            buildGroupedBarChart('c-ficChart', data, labels, data.map(d => d.uFIC), data.map(d => d.hFIC), 'FIC');
+            buildGapChart('c-ficGapChart', labels, data.map(d => d.uFIC - d.hFIC));
+            buildGroupedBarChart('c-hepbChart', data, labels, data.map(d => d.uHepB), data.map(d => d.hHepB), 'HepB');
+            buildGroupedBarChart('c-zdChart', data, labels, data.map(d => d.uZD), data.map(d => d.hZD), 'Zero Dose');
+            buildGroupedBarChart('c-mr1Chart', data, labels, data.map(d => d.uMR1), data.map(d => d.hMR1), 'MR-1');
+            buildGroupedBarChart('c-mr2Chart', data, labels, data.map(d => d.uMR2), data.map(d => d.hMR2), 'MR-2');
+            buildGroupedBarChart('c-doP1P3Chart', data, labels, data.map(d => d.uDoP1P3), data.map(d => d.hDoP1P3), 'Dropout P1→P3');
+            buildGroupedBarChart('c-doP3MR1Chart', data, labels, data.map(d => d.uDoP3MR1), data.map(d => d.hDoP3MR1), 'Dropout P3→MR1');
+            buildGroupedBarChart('c-doMR1MR2Chart', data, labels, data.map(d => d.uDoMR1MR2), data.map(d => d.hDoMR1MR2), 'Dropout MR1→MR2');
+            buildGroupedBarChart('c-td10Chart', data, labels, data.map(d => d.uTD10), data.map(d => d.hTD10), 'TD10');
+        }
+
+        function renderCompareDistCards() {
+            const el = document.getElementById('cmp-distCards'); if (!el) return;
+            const data = getCmpData();
+            el.innerHTML = data.map(d => {
+                const ficGap = d.uFIC - d.hFIC;
+                const gapColor = Math.abs(ficGap) < 5 ? gs('--green') : Math.abs(ficGap) < 15 ? gs('--amber') : gs('--red');
+                return `<div class="cmp-card">
+            <div class="cmp-title">📍 ${d.dist}</div>
+            <div class="cmp-row">
+                <div class="cmp-source">HMIS</div>
+                <div class="cmp-bar-wrap"><div class="cmp-bar" style="width:${d.hFIC}%;background:${statusColor(d.hFIC)}"></div></div>
+                <div class="cmp-pct" style="color:${statusColor(d.hFIC)}">${d.hFIC}%</div>
+            </div>
+            <div class="cmp-row">
+                <div class="cmp-source">UWIN</div>
+                <div class="cmp-bar-wrap"><div class="cmp-bar" style="width:${d.uFIC}%;background:${statusColor(d.uFIC)}"></div></div>
+                <div class="cmp-pct" style="color:${statusColor(d.uFIC)}">${d.uFIC}%</div>
+            </div>
+            <div style="margin-top:5px;font-size:8px;color:var(--muted);font-family:'Space Mono',monospace;">
+                FIC Gap: <strong style="color:${gapColor}">${ficGap >= 0 ? '+' : ''}${ficGap}pp</strong> · 
+                MR1: H${d.hMR1}% / U${d.uMR1}%
+            </div>
+        </div>`;
+            }).join('');
+        }
+
+        function renderCmpTable() {
+            const el_h = document.getElementById('c-tableHead'), el_b = document.getElementById('c-tableBody'); if (!el_h || !el_b) return;
+            const data = getCmpData();
+            const cols = [
+                { k: 'dist', l: 'District' }, { k: 'hFIC', l: 'HMIS FIC' }, { k: 'uFIC', l: 'UWIN FIC' }, { k: 'hZD', l: 'HMIS ZD' }, { k: 'uZD', l: 'UWIN ZD' },
+                { k: 'hHepB', l: 'HMIS HepB' }, { k: 'uHepB', l: 'UWIN HepB' }, { k: 'hMR1', l: 'HMIS MR1' }, { k: 'uMR1', l: 'UWIN MR1' },
+                { k: 'hMR2', l: 'HMIS MR2' }, { k: 'uMR2', l: 'UWIN MR2' }, { k: 'hTD10', l: 'HMIS TD10' }, { k: 'uTD10', l: 'UWIN TD10' }
+            ];
+            const sc = sortCol.cmp, sd = sortDir.cmp;
+            el_h.innerHTML = `<tr>${cols.map(c => `<th class="${sc === c.k ? 'sorted' : ''}" onclick="sortCmpTable('${c.k}')">${c.l}${sc === c.k ? (sd > 0 ? ' ↑' : ' ↓') : ''}</th>`).join('')}</tr>`;
+            let sorted = [...data]; if (sc) sorted.sort((a, b) => { const va = +a[sc] || 0, vb = +b[sc] || 0; return va > vb ? sd : va < vb ? -sd : 0; });
+            el_b.innerHTML = sorted.map(row => `<tr>${cols.map((c, i) => {
+                if (i === 0) return `<td class="td-dist">${row[c.k]}</td>`;
+                const val = +row[c.k] || 0;
+                const isHMIS = c.k.startsWith('h');
+                const baseCol = isHMIS ? gs('--accent') : gs('--accent2');
+                const p = Math.min(val, 100);
+                const col = statusColor(p);
+                return `<td><div class="pct-cell"><div class="pct-bar-wrap"><div class="pct-bar" style="width:${p}%;background:${col}"></div></div><div class="pct-val" style="color:${col}">${val}%</div></div></td>`;
+            }).join('')}</tr>`).join('');
+        }
+        function sortCmpTable(col) { sortDir.cmp = sortCol.cmp === col ? -sortDir.cmp : 1; sortCol.cmp = col; renderCmpTable(); }
+
+
+        // ══════════════════════════════════════════════════════
+        //  GEOSPATIAL PAGE RENDERERS (Polygon GeoJSON Map)
+        // ══════════════════════════════════════════════════════
+
+        // ── Per-KDI RAG thresholds ──
+        // neg KDIs: green < g, amber < a, red ≥ a
+        // pos KDIs: green ≥ g, amber ≥ a, red < a
+        const KDI_RAG = {
+            FIC: { neg: false, g: 90, a: 80 },
+            SDG: { neg: false, g: 90, a: 80 },
+            HepB: { neg: false, g: 90, a: 75 },
+            Penta1: { neg: false, g: 90, a: 80 },
+            Penta2: { neg: false, g: 90, a: 80 },
+            Penta3: { neg: false, g: 90, a: 80 },
+            MR1: { neg: false, g: 95, a: 80 },
+            MR2: { neg: false, g: 95, a: 80 },
+            TD10: { neg: false, g: 70, a: 60 },
+            TD16: { neg: false, g: 70, a: 60 },
+            BCG: { neg: false, g: 90, a: 75 },
+            OPV: { neg: false, g: 90, a: 75 },
+            ZeroDose: { neg: true, g: 5, a: 10 },   // <5% = green, 5-10 = amber, >10 = red
+            DO_P3_MR1: { neg: true, g: 3, a: 10 },   // <3% = green, 3-10 = amber, >10 = red
+            DO_MR1_MR2: { neg: true, g: 3, a: 10 },
+        };
+
+        // KDI definitions for the geo page
+        const GEO_KDIS = [
+            { id: 'FIC', label: 'FIC', icon: '✅', neg: false, getVal: r => r.Penta3_Given, getTgt: r => r.Target_01yr },
+            { id: 'HepB', label: 'Hep-B BD', icon: '💉', neg: false, getVal: r => r.HepB_Given, getTgt: r => r.BD_Target },
+            { id: 'Penta1', label: 'Penta-1', icon: '💊', neg: false, getVal: r => r.Penta1_Given, getTgt: r => r.Target_01yr },
+            { id: 'Penta2', label: 'Penta-2', icon: '💊', neg: false, getVal: r => r.Penta2_Given, getTgt: r => r.Target_01yr },
+            { id: 'Penta3', label: 'Penta-3', icon: '💊', neg: false, getVal: r => r.Penta3_Given, getTgt: r => r.Target_01yr },
+            { id: 'MR1', label: 'MR-1', icon: '🧪', neg: false, getVal: r => r.MR1_Given, getTgt: r => r.Target_01yr },
+            { id: 'MR2', label: 'MR-2', icon: '🔬', neg: false, getVal: r => r.MR2_Given, getTgt: r => r.Target_01yr },
+            { id: 'TD10', label: 'TD-10', icon: '🎒', neg: false, getVal: r => r.TD10_Given, getTgt: r => r.TD10_Target },
+            { id: 'TD16', label: 'TD-16', icon: '🎒', neg: false, getVal: r => r.TD16_Given, getTgt: r => r.TD16_Target },
+            { id: 'ZeroDose', label: 'Zero Dose', icon: '⚠️', neg: true, getVal: r => Math.max(0, (r.Target_01yr || 0) - (r.Penta1_Given || 0)), getTgt: r => r.Target_01yr },
+            { id: 'DO_P3_MR1', label: 'DO P3→MR1', icon: '📉', neg: true, getVal: r => Math.max(0, (r.Penta3_Given || 0) - (r.MR1_Given || 0)), getTgt: r => r.Penta3_Given },
+            { id: 'DO_MR1_MR2', label: 'DO MR1→MR2', icon: '📉', neg: true, getVal: r => Math.max(0, (r.MR1_Given || 0) - (r.MR2_Given || 0)), getTgt: r => r.MR1_Given },
+            { id: 'SDG', label: 'SDG Proxy', icon: '🌐', neg: false, getVal: r => r.Penta3_Given, getTgt: r => r.Target_01yr },
+        ];
+
+        // Helper: get RAG config for a KDI id (fallback to generic)
+        function getKdiRag(kdiId) {
+            return KDI_RAG[kdiId] || { neg: false, g: 80, a: 60 };
+        }
+
+        // Text color by per-KDI RAG
+        function kdiColor(pct, neg, kdiId) {
+            const rag = getKdiRag(kdiId || (neg ? 'ZeroDose' : 'FIC'));
+            if (rag.neg) return pct >= rag.a ? gs('--red') : pct >= rag.g ? gs('--amber') : gs('--green');
+            return pct >= rag.g ? gs('--green') : pct >= rag.a ? gs('--amber') : gs('--red');
+        }
+
+        // Fill color (rgba) by per-KDI RAG for polygon map
+        function kdiColorFill(pct, neg, kdiId) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const rag = getKdiRag(kdiId || (neg ? 'ZeroDose' : 'FIC'));
+            let level; // 'green' | 'amber' | 'red'
+            if (rag.neg) { level = pct >= rag.a ? 'red' : pct >= rag.g ? 'amber' : 'green'; }
+            else { level = pct >= rag.g ? 'green' : pct >= rag.a ? 'amber' : 'red'; }
+            const fills = {
+                green: isDark ? 'rgba(52,211,153,0.82)' : 'rgba(5,150,105,0.72)',
+                amber: isDark ? 'rgba(251,191,36,0.82)' : 'rgba(217,119,6,0.72)',
+                red: isDark ? 'rgba(248,113,113,0.82)' : 'rgba(220,38,38,0.72)',
+            };
+            return fills[level];
+        }
+
+        // RAG chip class
+        function kdiChipClass(pct, neg, kdiId) {
+            const rag = getKdiRag(kdiId || (neg ? 'ZeroDose' : 'FIC'));
+            if (rag.neg) return pct >= rag.a ? 'red' : pct >= rag.g ? 'amber' : 'green';
+            return pct >= rag.g ? 'green' : pct >= rag.a ? 'amber' : 'red';
+        }
+
+        function getKdiPct(kdiDef, row) {
+            const val = kdiDef.getVal(row) || 0;
+            const tgt = kdiDef.getTgt(row) || 0;
+            if (!tgt) return 0;
+            return Math.max(0, Math.round((val / tgt) * 100));
+        }
+
+        // Build the rich freeze popup HTML showing ALL KDIs for a district row
+        function buildDistrictPopup(row, activeSrc) {
+            const srcLabel = activeSrc === 'UWIN' ? D.month : HMIS.month;
+            const rows = GEO_KDIS.map(kdi => {
+                const val = kdi.getVal(row) || 0;
+                const tgt = kdi.getTgt(row) || 0;
+                const pct = tgt ? Math.max(0, Math.round(val / tgt * 100)) : 0;
+                const chip = kdiChipClass(pct, kdi.neg, kdi.id);
+                return `<div class="geo-popup-kdi-row">
+                    <span class="geo-popup-kdi-name">${kdi.icon} ${kdi.label}</span>
+                    <span class="geo-popup-kdi-val">${fmt(val)}</span>
+                    <span class="geo-popup-kdi-tgt">/ ${fmt(tgt)}</span>
+                    <span class="geo-popup-kdi-chip ${chip}">${pct}%</span>
+                </div>`;
+            }).join('');
+            return `<div class="geo-popup-inner">
+                <div class="geo-popup-header">
+                    <span class="geo-popup-title">📍 ${row.Districts}</span>
+                    <span class="geo-popup-source">${activeSrc} · ${srcLabel}</span>
+                </div>
+                <div style="font-size:8px;color:#526070;font-family:'Space Mono',monospace;margin-bottom:8px;">
+                    KDI &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Given &nbsp;&nbsp;&nbsp; Target &nbsp; Ach%
+                </div>
+                ${rows}
+            </div>`;
+        }
+
+        function renderGeo() {
+            buildSidebar('geo', D.records);
+            updateGeoMap();
+        }
+
+        async function updateGeoMap() {
+            const kdiId = document.getElementById('geo-kdi')?.value || 'FIC';
+            const source = document.getElementById('geo-source')?.value || 'UWIN';
+            const kdiDef = GEO_KDIS.find(k => k.id === kdiId) || GEO_KDIS[0];
+
+            // Update labels
+            const srcLbl = document.getElementById('g-lbl-source');
+            if (srcLbl) srcLbl.textContent = source + ' · ' + kdiDef.label;
+            const mapKdiLbl = document.getElementById('g-map-kdi-lbl');
+            if (mapKdiLbl) mapKdiLbl.textContent = kdiDef.label;
+            const srcBig = document.getElementById('g-kdi-src-lbl');
+            if (srcBig) srcBig.textContent = source + ' · ' + (source === 'UWIN' ? D.month : HMIS.month);
+
+            // Invert-legend
+            const invLeg = document.getElementById('g-inv-legend');
+            if (invLeg) invLeg.style.display = kdiDef.neg ? 'flex' : 'none';
+
+            // All records (for KDI strip + popup data)
+            const allRecs = (source === 'UWIN' ? D.records : HMIS.records).map(computeRow);
+
+            // ── KDI Summary strip ──
+            renderGeoKDIStrip(allRecs, source);
+
+            // ── Polygon Map ──
+            const container = document.getElementById('g-mapContainer');
+            if (!container) return;
+
+            if (!window.geojsonData) window.geojsonData = await fetchGeojson();
+            if (!window.geojsonData) {
+                container.innerHTML = "<div style='display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--muted)'>Map unavailable — check network</div>";
+                return;
+            }
+
+            // Build distMap keyed by UPPER district name
+            const distMap = {};
+            allRecs.forEach(row => {
+                const key = row.Districts.toUpperCase().trim();
+                const val = kdiDef.getVal(row) || 0;
+                const tgt = kdiDef.getTgt(row) || 0;
+                const pct = tgt ? Math.max(0, Math.round(val / tgt * 100)) : 0;
+                distMap[key] = { pct, val, tgt, rowName: row.Districts, neg: kdiDef.neg, row };
+            });
+
+            const nameMatch = gn => {
+                if (!gn) return '';
+                const g = gn.toUpperCase().trim();
+                if (g.includes('PAURI') || g === 'GARHWAL') return 'PAURI GARHWAL';
+                if (g.includes('TEHRI')) return 'TEHRI GARHWAL';
+                if (g.includes('UDHAM') || g.includes('U.S.')) return 'UDHAM SINGH NAGAR';
+                if (g.includes('RUDRA')) return 'RUDRA PRAYAG';
+                if (g.includes('UTTAR') && g.includes('KASHI')) return 'UTTAR KASHI';
+                if (g === 'HARDWAR' || g === 'HARIDWAR') return 'HARIDWAR';
+                for (let k of Object.keys(distMap)) { if (k.includes(g) || g.includes(k)) return k; }
+                return g;
+            };
+
+            // Initialise map once as a fixed, non-interactive canvas for screenshots
+            if (!geoMapInstance) {
+                geoMapInstance = L.map('g-mapContainer', {
+                    zoomControl: false,
+                    scrollWheelZoom: false,
+                    doubleClickZoom: false,
+                    dragging: false,
+                    boxZoom: false,
+                    keyboard: false,
+                    touchZoom: false,
+                    attributionControl: false
+                });
+            }
+
+            // Remove old layer + labels
+            if (geoMarkers._geoLayer) geoMapInstance.removeLayer(geoMarkers._geoLayer);
+            if (geoMarkers._geoLabels) geoMarkers._geoLabels.forEach(m => geoMapInstance.removeLayer(m));
+            geoMarkers._geoLabels = [];
+
+            const geoLayer = L.geoJSON(window.geojsonData, {
+                style: feature => {
+                    const gn = feature.properties.Dist_Name || feature.properties.dtname || feature.properties.DISTRICT || feature.properties.District || feature.properties.NAME_2 || feature.properties.name || '';
+                    const d = distMap[nameMatch(gn)];
+                    const fill = d ? kdiColorFill(d.pct, kdiDef.neg, kdiId) : 'rgba(150,150,150,0.2)';
+                    return { fillColor: fill, weight: 1.5, opacity: 1, color: '#fff', fillOpacity: 1 };
+                },
+                onEachFeature: (feature, layer) => {
+                    const gn = feature.properties.Dist_Name || feature.properties.dtname || feature.properties.DISTRICT || feature.properties.District || feature.properties.NAME_2 || feature.properties.name || 'Unknown';
+                    const mn = nameMatch(gn);
+                    const d = distMap[mn];
+                    const pct = d ? d.pct : null;
+                    const col = d ? kdiColor(d.pct, kdiDef.neg, kdiId) : gs('--muted');
+                    const rawName = d ? d.rowName : gn;
+                    const chipCls = d ? kdiChipClass(d.pct, kdiDef.neg, kdiId) : 'red';
+
+                    // ── Hover tooltip (lightweight) ──
+                    const hoverTip = `<div style="font-family:'DM Sans',sans-serif;text-align:center;padding:4px 2px">
+                        <b style="font-size:11px;color:#e8f0fe">${rawName}</b><br/>
+                        <span style="font-size:8px;color:#94a3b8;text-transform:uppercase">${kdiDef.icon} ${kdiDef.label}</span>
+                        <div style="font-size:18px;font-weight:700;color:${col};margin-top:2px">${pct != null ? pct + '%' : 'N/A'}</div>
+                        <div style="font-size:8px;color:#526070;margin-top:1px">${d ? fmt(d.val) + ' / ' + fmt(d.tgt) : ''}</div>
+                        <div style="font-size:7px;color:#6b8ef5;margin-top:3px">🖱 Click to pin all KDIs</div>
+                    </div>`;
+                    layer.bindTooltip(hoverTip, { className: 'leaflet-custom-tooltip', direction: 'auto', sticky: false, opacity: 0.97 });
+
+                    // ── Click → freeze popup with ALL KDIs ──
+                    layer.on({
+                        mouseover: e => {
+                            e.target.setStyle({ weight: 3, color: gs('--accent') || '#6b8ef5' });
+                            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) e.target.bringToFront();
+                        },
+                        mouseout: e => geoLayer.resetStyle(e.target),
+                        click: e => {
+                            if (d && d.row) {
+                                const popHtml = buildDistrictPopup(d.row, source);
+                                L.popup({ className: 'geo-popup', maxWidth: 310, closeButton: true, autoClose: false, closeOnClick: false })
+                                    .setLatLng(e.latlng)
+                                    .setContent(popHtml)
+                                    .openOn(geoMapInstance);
+                            }
+                            if (d) selectDistrict('geo', d.rowName);
+                        }
+                    });
+
+                    // ── Leader-line annotation: label OUTSIDE state boundary, line points IN ──
+                    const center = layer.getBounds().getCenter();
+
+                    // Absolute positions outside Uttarakhand state boundary
+                    // Perimeter ring pulled inward to fit within the 600px container viewport
+                    const LABEL_POSITIONS = {
+                        // ── TOP ROW (lat 31.55°N) ──
+                        'UTTAR KASHI': [31.55, 77.85],
+                        'RUDRA PRAYAG': [31.55, 78.88],
+                        'CHAMOLI': [31.55, 79.78],
+                        // ── RIGHT SIDE (lng 81.10°E) ──
+                        'PITHORAGARH': [30.55, 81.10],
+                        'BAGESHWAR': [29.82, 81.10],
+                        'CHAMPAWAT': [29.10, 81.10],
+                        // ── BOTTOM ROW (lat 28.35°N) ──
+                        'ALMORA': [28.35, 80.45],
+                        'UDHAM SINGH NAGAR': [28.35, 79.50],
+                        'NAINITAL': [28.35, 78.55],
+                        // ── LEFT SIDE (lng 77.30°E) ──
+                        'TEHRI GARHWAL': [30.75, 77.30],
+                        'DEHRADUN': [30.18, 77.30],
+                        'HARIDWAR': [29.55, 77.30],
+                        'PAURI GARHWAL': [28.90, 77.30],
+                    };
+
+                    const outerPos = LABEL_POSITIONS[rawName.toUpperCase()];
+                    if (!outerPos) return; // skip unknown districts
+                    const bubblePos = L.latLng(outerPos[0], outerPos[1]);
+
+                    // Elbow midpoint for 2-segment leader line (right-angle look)
+                    // Mid-lat = district centroid lat, Mid-lng = bubble lng (or vice versa)
+                    const isTopBottom = outerPos[0] > 31.5 || outerPos[0] < 28.0;
+                    const midPt = isTopBottom
+                        ? L.latLng(center.lat, bubblePos.lng)   // go horizontal first, then vertical
+                        : L.latLng(bubblePos.lat, center.lng);  // go vertical first, then horizontal
+
+                    // 1. Glowing centroid dot
+                    const dotIcon = L.divIcon({
+                        className: 'geo-district-label',
+                        html: `<div class="gdl-dot" style="width:9px;height:9px;background:${col};color:${col}"></div>`,
+                        iconSize: [9, 9], iconAnchor: [4.5, 4.5]
+                    });
+                    const dotM = L.marker(center, { icon: dotIcon, interactive: false, zIndexOffset: 300 }).addTo(geoMapInstance);
+
+                    // 2. Two-segment elbow leader line
+                    const line = L.polyline([center, midPt, bubblePos], {
+                        color: col, weight: 1.5, opacity: 0.80,
+                        dashArray: '6, 4', interactive: false
+                    }).addTo(geoMapInstance);
+
+                    // 3. Outer bubble label
+                    const words = rawName.split(' ');
+                    const shortLbl = words.length > 1
+                        ? words[0].slice(0, 5) + ' ' + words[1].slice(0, 4)
+                        : rawName.slice(0, 9);
+                    const barW = Math.min(pct || 0, 100) * 0.50 + 12;
+                    const bubbleIcon = L.divIcon({
+                        className: 'geo-district-label',
+                        html: `<div class="gdl-bubble" style="border-color:${col}">
+                            <div class="gdl-b-name">${shortLbl.toUpperCase()}</div>
+                            <div class="gdl-b-pct" style="color:${col}">${pct != null ? pct + '%' : 'N/A'}</div>
+                            <div style="font-size:6px;color:#526070;font-family:'Space Mono',monospace;margin-top:1px">${d ? fmt(d.val) + '/' + fmt(d.tgt) : ''}</div>
+                            <div class="gdl-bar" style="width:${barW}px;background:${col}"></div>
+                        </div>`,
+                        iconSize: [82, 52], iconAnchor: [41, 26]
+                    });
+                    const bubM = L.marker(bubblePos, { icon: bubbleIcon, interactive: false, zIndexOffset: 600 }).addTo(geoMapInstance);
+
+                    geoMarkers._geoLabels.push(dotM, line, bubM);
+                }
+            }).addTo(geoMapInstance);
+
+            geoMarkers._geoLayer = geoLayer;
+            // Tightly fit all outer labels + state in a single clean screenshot view
+            setTimeout(() => { geoMapInstance.invalidateSize(); geoMapInstance.fitBounds([[27.95, 76.80], [31.92, 81.52]], { padding: [40, 40] }); }, 120);
+        }
+
+        function renderGeoKDIStrip(allRecs, source) {
+            const el = document.getElementById('geo-kdi-strip'); if (!el) return;
+            const activeKdi = document.getElementById('geo-kdi')?.value || 'FIC';
+            el.innerHTML = GEO_KDIS.map(kdi => {
+                let totalVal = 0, totalTgt = 0;
+                allRecs.forEach(row => { totalVal += (kdi.getVal(row) || 0); totalTgt += (kdi.getTgt(row) || 0); });
+                const pct = totalTgt ? Math.max(0, Math.round(totalVal / totalTgt * 100)) : 0;
+                const col = kdiColor(pct, kdi.neg, kdi.id);
+                const chip = kdiChipClass(pct, kdi.neg, kdi.id);
+                const bgMap = { green: 'var(--green-bg)', amber: 'var(--amber-bg)', red: 'var(--red-bg)' };
+                const bg = bgMap[chip];
+                const isActive = kdi.id === activeKdi;
+                const rag = getKdiRag(kdi.id);
+                const threshold = kdi.neg
+                    ? `🟢<${rag.g}% 🟡${rag.g}-${rag.a}% 🔴>${rag.a}%`
+                    : `🟢≥${rag.g}% 🟡${rag.a}-${rag.g}% 🔴<${rag.a}%`;
+                return `<div class="chart-card" onclick="document.getElementById('geo-kdi').value='${kdi.id}';updateGeoMap();"
+                    style="padding:10px 12px;cursor:pointer;transition:.18s;border-color:${isActive ? col : 'var(--border)'};background:${isActive ? bg : 'var(--surface)'};"
+                    title="${threshold}">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                        <span style="font-size:8px;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.5px">${kdi.label}</span>
+                        <span style="font-size:12px">${kdi.icon}</span>
+                    </div>
+                    <div style="font-size:18px;font-weight:700;font-family:'Space Mono',monospace;color:${col}">${pct}%</div>
+                    <div style="height:3px;background:var(--surface2);border-radius:2px;margin-top:5px;overflow:hidden;">
+                        <div style="height:100%;width:${Math.min(pct, 100)}%;background:${col};border-radius:2px;"></div>
+                    </div>
+                    <div style="font-size:7px;color:${col};font-family:'Space Mono',monospace;margin-top:3px;opacity:.75">${threshold}</div>
+                    ${isActive ? `<div style="font-size:7px;color:${col};font-family:'Space Mono',monospace;margin-top:1px;">● ACTIVE</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+
+
+        // ── INIT & UPLOAD LOGIC ──
+        function initializeDataSeparately(uwinData, hmisData) {
+            D = uwinData;
+            UWIN_DATA = uwinData;
+            HMIS_DATA = hmisData;
+            HMIS = hmisData;
+
+            activeDistrict.uwin = 'ALL'; sortCol.uwin = null;
+            document.getElementById('activeBadge').textContent = D.month.toUpperCase().slice(0, 8);
+
+            const overlay = document.getElementById('landing-overlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => { overlay.style.display = 'none'; }, 400);
+            }
+
+            geojsonLayers = {};
+            renderUWIN();
+        }
+
+        async function fetchGoogleSheet() {
+            const urlInput = document.getElementById('sheetUrlInput').value.trim();
+            if (!urlInput) {
+                alert('Please enter a Google Sheets link');
+                return;
+            }
+            const match = urlInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!match) {
+                alert('Invalid Google Sheets link. Could not find Document ID.');
+                return;
+            }
+            const sheetId = match[1];
+            const fetchStatus = document.getElementById('fetch-status');
+            fetchStatus.style.display = 'block';
+            fetchStatus.textContent = 'Fetching data...';
+
+            try {
+                const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=xlsx`;
+                const response = await fetch(exportUrl);
+                if (!response.ok) throw new Error('Network response was not ok: ' + response.statusText);
+
+                const arrayBuffer = await response.arrayBuffer();
+                const wb = XLSX.read(arrayBuffer, { type: 'array' });
+                processWorkbook(wb, 'Google Sheets', 'Google Sheets');
+            } catch (err) {
+                alert('Error fetching from Google Sheets. Ensure the sheet is public. ' + err.message);
+                fetchStatus.style.display = 'none';
+            }
+        }
+
+        function standardizeDistrict(name) {
+            if (!name) return "UNKNOWN";
+            name = String(name).trim().toUpperCase();
+            if (name.includes('TEHRI')) return 'TEHRI GARHWAL';
+            if (name.includes('PAURI') || name === 'GARHWAL') return 'PAURI GARHWAL';
+            if (name.includes('UDHAM') || name.includes('U.S') || name.includes('U S') || name.includes('US NAGAR')) return 'UDHAM SINGH NAGAR';
+            if (name.includes('UTTARAKHAND') || name === 'TOTAL' || name === 'STATE' || name === 'GRAND TOTAL') return 'UTTARAKHAND';
+            name = name.replace(' DISTRICT', '');
+            return name;
+        }
+
+        function getSheetData(wb, sheetName) {
+            if (!wb.SheetNames.includes(sheetName)) return [];
+            return XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, raw: true });
+        }
+
+        function extractKDI(rawSheet, rowMapper) {
+            if (!rawSheet || rawSheet.length < 2) return [];
+            const headerIdx = rawSheet.findIndex(r => r && r.some(c => typeof c === 'string' && c.trim().toLowerCase() === 'district'));
+            if (headerIdx === -1) return [];
+            const headers = rawSheet[headerIdx];
+            return rawSheet.slice(headerIdx + 1).map(row => {
+                if (!row || !row[0]) return null;
+                const rec = { District: standardizeDistrict(row[0]) };
+                rowMapper(row, rec, headers);
+                return rec;
+            }).filter(Boolean);
+        }
+
+        function mergeKDI(baseRecords, kdiRecords, fieldsToCopy) {
+            kdiRecords.forEach(kdi => {
+                let rec = baseRecords.find(r => r.Districts === kdi.District);
+                if (!rec) {
+                    rec = { Districts: kdi.District };
+                    baseRecords.push(rec);
+                }
+                fieldsToCopy.forEach(f => {
+                    if (kdi[f] !== undefined) rec[f] = kdi[f];
+                });
+            });
+        }
+
+        function findIdx(hdrs, substr) {
+            return hdrs.findIndex(h => typeof h === 'string' && h.toLowerCase().includes(substr.toLowerCase()));
+        }
+
+        function processWorkbook(wb, defaultMonthStr, sourceStr) {
+            let uwinSheet = wb.SheetNames.find(n => /uwin/i.test(n));
+            let hmisSheet = wb.SheetNames.find(n => /hmis/i.test(n));
+
+            if (!uwinSheet && !hmisSheet) {
+                uwinSheet = wb.SheetNames.find(n => /jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i.test(n)) || wb.SheetNames[0];
+                hmisSheet = uwinSheet;
+            }
+            if (!uwinSheet) uwinSheet = hmisSheet;
+            if (!hmisSheet) hmisSheet = uwinSheet;
+
+            const rawUwin = XLSX.utils.sheet_to_json(wb.Sheets[uwinSheet], { header: 1, raw: true });
+            let uwinData = processRawData(rawUwin, uwinSheet, sourceStr + ' (UWIN)');
+
+            const rawHmis = XLSX.utils.sheet_to_json(wb.Sheets[hmisSheet], { header: 1, raw: true });
+            let hmisData = processRawData(rawHmis, hmisSheet, sourceStr + ' (HMIS)');
+
+            if (!uwinData) uwinData = { records: [], month: defaultMonthStr, source: sourceStr };
+            if (!hmisData) hmisData = { records: [], month: defaultMonthStr, source: sourceStr };
+
+            // Ensure base records are standardized too!
+            uwinData.records.forEach(r => { r.Districts = standardizeDistrict(r.Districts); });
+            hmisData.records.forEach(r => { r.Districts = standardizeDistrict(r.Districts); });
+
+            const ficRaw = getSheetData(wb, 'FIC');
+            const ficUWIN = extractKDI(ficRaw, (row, rec, hdrs) => {
+                let idx = findIdx(hdrs, 'uwin %');
+                if (idx > -1) rec['FIC_%'] = Math.round((row[idx] || 0) * 100);
+            });
+            const ficHMIS = extractKDI(ficRaw, (row, rec, hdrs) => {
+                let idx = findIdx(hdrs, 'hmis %');
+                if (idx > -1) rec['FIC_%'] = Math.round((row[idx] || 0) * 100);
+            });
+            mergeKDI(uwinData.records, ficUWIN, ['FIC_%']);
+            mergeKDI(hmisData.records, ficHMIS, ['FIC_%']);
+
+            const hepbRaw = getSheetData(wb, 'Hep B');
+            const hepbUWIN = extractKDI(hepbRaw, (row, rec, hdrs) => {
+                let tIdx = findIdx(hdrs, 'delivery uwin');
+                let gIdx = findIdx(hdrs, 'hep b uwin');
+                if (tIdx > -1) rec.BD_Target = row[tIdx];
+                if (gIdx > -1) rec.HepB_Given = row[gIdx];
+            });
+            const hepbHMIS = extractKDI(hepbRaw, (row, rec, hdrs) => {
+                let tIdx = findIdx(hdrs, 'delivery hmis');
+                let gIdx = findIdx(hdrs, 'hep b hmis');
+                if (tIdx > -1) rec.BD_Target = row[tIdx];
+                if (gIdx > -1) rec.HepB_Given = row[gIdx];
+            });
+            mergeKDI(uwinData.records, hepbUWIN, ['BD_Target', 'HepB_Given']);
+            mergeKDI(hmisData.records, hepbHMIS, ['BD_Target', 'HepB_Given']);
+
+            const zdRaw = getSheetData(wb, 'Zero Dose');
+            const zdUWIN = extractKDI(zdRaw, (row, rec, hdrs) => {
+                let idx = findIdx(hdrs, 'uwin %');
+                if (idx > -1) rec['ZeroDose_%'] = Math.round((row[idx] || 0) * 100);
+            });
+            const zdHMIS = extractKDI(zdRaw, (row, rec, hdrs) => {
+                let idx = findIdx(hdrs, 'hmis %');
+                if (idx > -1) rec['ZeroDose_%'] = Math.round((row[idx] || 0) * 100);
+            });
+            mergeKDI(uwinData.records, zdUWIN, ['ZeroDose_%']);
+            mergeKDI(hmisData.records, zdHMIS, ['ZeroDose_%']);
+
+            const doRaw = getSheetData(wb, 'Drop Out');
+            const doUWIN = extractKDI(doRaw, (row, rec, hdrs) => {
+                let i1 = findIdx(hdrs, 'uwin drop out penta 1');
+                let i2 = findIdx(hdrs, 'uwin drop out penta 3');
+                let i3 = findIdx(hdrs, 'uwin drop out mr 1');
+                if (i1 > -1) rec.DO_P1P3 = Math.round((row[i1] || 0) * 100);
+                if (i2 > -1) rec.DO_P3MR1 = Math.round((row[i2] || 0) * 100);
+                if (i3 > -1) rec.DO_MR1MR2 = Math.round((row[i3] || 0) * 100);
+            });
+            const doHMIS = extractKDI(doRaw, (row, rec, hdrs) => {
+                let i1 = findIdx(hdrs, 'hmis drop out penta 1');
+                let i2 = findIdx(hdrs, 'hmis drop out penta 3');
+                let i3 = findIdx(hdrs, 'hmis drop out mr 1');
+                if (i1 > -1) rec.DO_P1P3 = Math.round((row[i1] || 0) * 100);
+                if (i2 > -1) rec.DO_P3MR1 = Math.round((row[i2] || 0) * 100);
+                if (i3 > -1) rec.DO_MR1MR2 = Math.round((row[i3] || 0) * 100);
+            });
+            mergeKDI(uwinData.records, doUWIN, ['DO_P1P3', 'DO_P3MR1', 'DO_MR1MR2']);
+            mergeKDI(hmisData.records, doHMIS, ['DO_P1P3', 'DO_P3MR1', 'DO_MR1MR2']);
+
+            const mrRaw = getSheetData(wb, 'MR1 AND MR2');
+            const mrUWIN = extractKDI(mrRaw, (row, rec, hdrs) => {
+                let t = findIdx(hdrs, 'target');
+                if (t > -1) rec.Target_01yr = row[t];
+
+                let idx = -1;
+                for (let i = 0; i < hdrs.length; i++) {
+                    if (typeof hdrs[i] === 'string' && hdrs[i].toLowerCase().includes('mr 1') && hdrs[i].toLowerCase().includes('uwin')) idx = i;
+                }
+                if (idx === -1) idx = 4; // fallback
+                rec.MR1_Given = row[idx];
+                rec.MR2_Given = row[idx + 1];
+            });
+            const mrHMIS = extractKDI(mrRaw, (row, rec, hdrs) => {
+                let t = findIdx(hdrs, 'target');
+                if (t > -1) rec.Target_01yr = row[t];
+                rec.MR1_Given = row[2];
+                rec.MR2_Given = row[3];
+            });
+            mergeKDI(uwinData.records, mrUWIN, ['Target_01yr', 'MR1_Given', 'MR2_Given']);
+            mergeKDI(hmisData.records, mrHMIS, ['Target_01yr', 'MR1_Given', 'MR2_Given']);
+
+            const tdRaw = getSheetData(wb, 'Td 10');
+            const tdUWIN = extractKDI(tdRaw, (row, rec, hdrs) => {
+                let t = findIdx(hdrs, 'target');
+                let g = findIdx(hdrs, 'td10 uwin');
+                if (t > -1) rec.TD10_Target = row[t];
+                if (g > -1) rec.TD10_Given = row[g];
+            });
+            const tdHMIS = extractKDI(tdRaw, (row, rec, hdrs) => {
+                let t = findIdx(hdrs, 'target');
+                let g = findIdx(hdrs, 'td10 hmis');
+                if (t > -1) rec.TD10_Target = row[t];
+                if (g > -1) rec.TD10_Given = row[g];
+            });
+            mergeKDI(uwinData.records, tdUWIN, ['TD10_Target', 'TD10_Given']);
+            mergeKDI(hmisData.records, tdHMIS, ['TD10_Target', 'TD10_Given']);
+
+            const hpvRaw = getSheetData(wb, 'HPV');
+            const hpvUWIN = extractKDI(hpvRaw, (row, rec, hdrs) => {
+                let g = findIdx(hdrs, 'hpv uwin');
+                let p = findIdx(hdrs, '%');
+                if (g > -1) rec.HPV_Given = row[g];
+                if (p > -1) rec.HPV_Pct = Math.round((row[p] || 0) * 100);
+            });
+            mergeKDI(uwinData.records, hpvUWIN, ['HPV_Given', 'HPV_Pct']);
+
+            const aefiRaw = getSheetData(wb, 'AEFI');
+            const aefiUWIN = extractKDI(aefiRaw, (row, rec, hdrs) => {
+                let g = findIdx(hdrs, 'safevac');
+                if (g > -1) rec.AEFI = row[g];
+            });
+            mergeKDI(uwinData.records, aefiUWIN, ['AEFI']);
+
+            const aefiHMIS = extractKDI(aefiRaw, (row, rec, hdrs) => {
+                let g = findIdx(hdrs, 'aefi hmis');
+                if (g > -1) rec.AEFI = row[g];
+            });
+            mergeKDI(hmisData.records, aefiHMIS, ['AEFI']);
+
+            // Separate Uttarakhand aggregate from regular districts
+            // If we keep UTTARAKHAND in records, sumF operations will double count!
+            let uwinState = uwinData.records.find(r => r.Districts === 'UTTARAKHAND');
+            if (uwinState) {
+                uwinData.records = uwinData.records.filter(r => r.Districts !== 'UTTARAKHAND');
+                uwinData.stateRecord = uwinState;
+            }
+            let hmisState = hmisData.records.find(r => r.Districts === 'UTTARAKHAND');
+            if (hmisState) {
+                hmisData.records = hmisData.records.filter(r => r.Districts !== 'UTTARAKHAND');
+                hmisData.stateRecord = hmisState;
+            }
+
+            if (uwinData.records.length > 0 || hmisData.records.length > 0) {
+                initializeDataSeparately(uwinData, hmisData);
+            } else {
+                alert('No valid data found in sheets.');
+                document.getElementById('fetch-status').style.display = 'none';
+            }
+        }
+
+        function processRawData(raw, defaultMonthStr, sourceStr) {
+            if (!raw || raw.length < 2) return null;
+
+            const AQ_MAP = {
+                'No. of Institutional Deliveries ( including C section)': 'BD_Target', 'HepB Birth Dose Given': 'HepB_Given', '% Achievement (HepB)': 'HepB_Pct',
+                'BCG Given': 'BCG_Given', '% Achievement (BCG)': 'BCG_Pct', 'OPV-0 Given': 'OPV0_Given', '% Achievement (OPV-0)': 'OPV0_Pct',
+                'Monthly Target (0-1 yr)': 'Target_01yr', 'Penta-1 Given': 'Penta1_Given', '% Achievement (Penta-1)': 'Penta1_Pct',
+                'RVV-1 Given': 'RVV1_Given', '% Achievement (RVV-1)': 'RVV1_Pct', 'fIPV-1 Given': 'fIPV1_Given', '% Achievement (fIPV-1)': 'fIPV1_Pct',
+                'PCV-1 Given': 'PCV1_Given', '% Achievement (PCV-1)': 'PCV1_Pct', 'OPV-1 Given': 'OPV1_Given', '% Achievement (OPV-1)': 'OPV1_Pct',
+                'RVV-2 Given': 'RVV2_Given', '% Achievement (RVV-2)': 'RVV2_Pct', '0PV-2 Given': 'OPV2_Given', '% Achievement (0PV-2)': 'OPV2_Pct',
+                'Penta-2 Given': 'Penta2_Given', '% Achievement (fIPV-1)': 'Penta2_Pct', 'OPV-3 Given': 'OPV3_Given', '% Achievement (OPV-3)': 'OPV3_Pct',
+                'Penta-3 Given': 'Penta3_Given', '% Achievement (Penta-3)': 'Penta3_Pct', 'RVV-3 Given': 'RVV3_Given', '% Achievement (RVV-3)': 'RVV3_Pct',
+                'fIPV-2 Given': 'fIPV2_Given', '% Achievement (fIPV-2)': 'fIPV2_Pct', 'PCV-2 Given': 'PCV2_Given', '% Achievement (PCV-2)': 'PCV2_Pct',
+                'MR-1 Given': 'MR1_Given', '% Achievement (MR-1)': 'MR1_Pct', 'JE Given': 'JE1_Given', '% Achievement (JE)': 'JE1_Pct',
+                'PCV Booster Given': 'PCVBooster_Given', '% Achievement (PCV B)': 'PCVBooster_Pct', 'MR-2 Given': 'MR2_Given', '% Achievement (MR-2)': 'MR2_Pct',
+                'DPT B1 Given': 'DPTB1_Given', '% Achievement (DPT B 1)': 'DPTB1_Pct', 'OPV B Given': 'OPVB_Given', '% Achievement (OPV B)': 'OPVB_Pct',
+                'DPT B2 Given': 'DPTB2_Given', '% Achievement (DPT B 2)': 'DPTB2_Pct',
+                'TD10 Monthly Target': 'TD10_Target', 'TD10 Given': 'TD10_Given', '% Achievement (TD10)': 'TD10_Pct',
+                'TD16 Monthly Target': 'TD16_Target', 'TD16 Given': 'TD16_Given', '% Achievement (TD16)': 'TD16_Pct',
+
+                'Session Planned': 'Session Planned', 'Session Held': 'Session Held',
+                'Number of Pregnant Women vaccinated': 'Number of Pregnant Women vaccinated',
+                'Number of Infants (0-1 year) vaccinated': 'Number of Infants (0-1 year) vaccinated',
+                'Number of Children (>1 year) vaccinated': 'Number of Children (>1 year) vaccinated',
+                'Number of Adolescents Vaccinated': 'Number of Adolescents Vaccinated',
+                'Number of Women vaccinated with Td-1': 'Number of Women vaccinated with Td-1',
+                'Number of Women vaccinated with Td-2': 'Number of Women vaccinated with Td-2',
+                'Number of Women vaccinated with Td-Booster': 'Number of Women vaccinated with Td-Booster'
+            };
+
+            let headerRowIdx = 0;
+            let colMap = {};
+            let distIdx = -1;
+
+            for (let r = 0; r < Math.min(15, raw.length); r++) {
+                if (!raw[r]) continue;
+                let map = {};
+                let currentDistIdx = -1;
+                for (let c = 0; c < raw[r].length; c++) {
+                    const val = String(raw[r][c] || '').trim();
+                    if (!val) continue;
+                    if (AQ_MAP[val]) map[AQ_MAP[val]] = c;
+                    if (val.toLowerCase() === 'district' || val.toLowerCase() === 'districts') currentDistIdx = c;
+                }
+                if (Object.keys(map).length > Object.keys(colMap).length) {
+                    headerRowIdx = r;
+                    colMap = map;
+                    distIdx = currentDistIdx;
+                }
+            }
+
+            if (distIdx === -1) {
+                for (let c = 0; c < raw[headerRowIdx].length; c++) {
+                    const val = String(raw[headerRowIdx][c] || '').trim();
+                    if (val.toLowerCase() === 'block') { distIdx = c; break; }
+                }
+                if (distIdx === -1) distIdx = 0;
+            }
+
+            let lastDistrict = "Unknown";
+            const records = raw.slice(headerRowIdx + 1).map(row => {
+                if (!row || !row.length) return null;
+                const rawDist = String(row[distIdx] || '').trim();
+
+                if (rawDist && !/^(s\.no|sl\.no|total|state|district)/i.test(rawDist)) {
+                    lastDistrict = rawDist.toUpperCase();
+                } else if (!rawDist) {
+                    // carry forward lastDistrict
+                } else {
+                    return null;
+                }
+
+                let hasData = false;
+                Object.values(colMap).forEach(ci => { if (row[ci] !== undefined && row[ci] !== null && row[ci] !== '') hasData = true; });
+                if (!hasData) return null;
+
+                const rec = { Districts: lastDistrict };
+                const FIXED = ['Session Planned', 'Session Held', 'Number of Pregnant Women vaccinated', 'Number of Infants (0-1 year) vaccinated', 'Number of Children (>1 year) vaccinated', 'Number of Adolescents Vaccinated', 'Number of Women vaccinated with Td-1', 'Number of Women vaccinated with Td-2', 'Number of Women vaccinated with Td-Booster'];
+                FIXED.forEach(k => { rec[k] = 0; });
+
+                Object.entries(colMap).forEach(([k, ci]) => { rec[k] = +row[ci] || 0; });
+                return rec;
+            }).filter(rec => rec && rec.Districts !== "UNKNOWN");
+
+            if (!records.length) {
+                console.warn('No data rows found in ' + defaultMonthStr);
+                return { records: [], month: defaultMonthStr, source: sourceStr };
+            }
+
+            let month;
+            const mMatch = String(defaultMonthStr).match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s_-]*(\d{2,4})/i);
+            if (mMatch) {
+                const mon = mMatch[1].charAt(0).toUpperCase() + mMatch[1].slice(1).toLowerCase();
+                const yr = mMatch[2].length === 2 ? '20' + mMatch[2] : mMatch[2];
+                month = mon + ' ' + yr;
+            } else { month = defaultMonthStr + ' 2026'; }
+
+            return { records, month, source: sourceStr };
+        }
+
+        // ── UPLOAD ──
+        function handleFile(e) {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const wb = XLSX.read(ev.target.result, { type: 'binary' });
+                    processWorkbook(wb, file.name, 'Uploaded: ' + file.name);
+                } catch (err) { alert('Error parsing file: ' + err.message); }
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        // ── INIT ──
+
+        Chart.defaults.font.family = "'DM Sans', sans-serif";
+        // Dashboard does not render until data is uploaded.
+
+    </script>
+</body>
+
+</html>
