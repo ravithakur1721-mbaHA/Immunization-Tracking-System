@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UWIN + HMIS Immunization Dashboard — Uttarakhand FY 2026-27</title>
+    <!-- Favicon: Uttarakhand Government Seal -->
+    <link rel="icon" type="image/jpeg" href="UttarakhandShasan.jpg">
+    <link rel="apple-touch-icon" href="UttarakhandShasan.jpg">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -81,15 +84,24 @@
         }
 
         .logo-badge {
-            width: 34px;
-            height: 34px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            width: 38px;
+            height: 38px;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
             flex-shrink: 0;
+            overflow: hidden;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+        }
+
+        .logo-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
 
         .nav-title {
@@ -1279,9 +1291,28 @@
             flex-direction: column;
         }
 
+        /* Dedicated full-width map panel — extracted from cramped grids */
+        .map-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 15px 17px 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 13px;
+        }
+
+        .map-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
         .map-container {
             flex: 1;
-            min-height: 280px;
+            min-height: 520px;
             width: 100%;
             position: relative;
             z-index: 1;
@@ -1289,19 +1320,29 @@
             overflow: hidden;
         }
 
+        /* Full-bleed geo map that fills page content area */
+        .geo-map-fullbleed {
+            height: calc(100vh - 180px);
+            min-height: 540px;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
         .leaflet-container {
-            background: transparent !important;
+            background: #f0ece6 !important;
             font-family: 'Inter', sans-serif;
         }
 
         .leaflet-tooltip.leaflet-custom-tooltip {
-            background: var(--surface);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            box-shadow: var(--shadow);
+            background: #1e2a3a;
+            color: #e8f0fe;
+            border: 1px solid #2e4057;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.45);
             font-size: 9px;
-            padding: 5px 9px;
+            padding: 8px 12px;
             font-family: 'Inter', sans-serif;
             white-space: nowrap;
         }
@@ -1709,7 +1750,9 @@
     <nav class="navbar">
         <div class="nav-top">
             <div class="nav-left">
-                <div class="logo-badge">🛡️</div>
+                <div class="logo-badge">
+                    <img src="NationalHealthMission.jpg" alt="National Health Mission" title="National Health Mission — Uttarakhand">
+                </div>
                 <div>
                     <div class="nav-title">Immunization Intelligence Dashboard</div>
                     <div class="nav-sub">Uttarakhand · FY 2026–27 · UWIN + HMIS</div>
@@ -1741,7 +1784,9 @@
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease;">
         <div
             style="background: var(--surface); padding: 40px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 500px; width: 90%; text-align: center;">
-            <div class="logo-badge" style="width: 56px; height: 56px; font-size: 24px; margin: 0 auto 16px;">🛡️</div>
+            <div class="logo-badge" style="width:64px;height:64px;border-radius:12px;margin:0 auto 16px;">
+                <img src="NationalHealthMission.jpg" alt="National Health Mission">
+            </div>
             <h1
                 style="font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 8px;">
                 Immunization Intelligence Dashboard</h1>
@@ -1862,7 +1907,7 @@
                 </div>
 
                 <div class="section-title">TD10 &amp; TD16 — Target vs Achievement (5–16 yr Adolescents)</div>
-                <div class="td-panel">
+                <div class="grid-2" style="margin-bottom:13px;">
                     <div class="td-card" style="--tc-color:var(--accent)">
                         <div class="td-header">
                             <div class="td-title">🎯 Monthly Targets <span class="chart-month"
@@ -1870,16 +1915,6 @@
                             <span id="u-td10chip"></span>
                         </div>
                         <div id="u-td1016content"></div>
-                    </div>
-                    <div class="map-card">
-                        <div class="td-header">
-                            <div class="td-title">🗺 District Achievement Map</div><span class="chart-month">TD10
-                                Coverage</span>
-                        </div>
-                        <div style="font-size:8px;color:var(--muted);margin-bottom:7px;">Leaflet GeoSpatial · Pan &amp;
-                            Zoom · click district to filter</div>
-                        <div class="map-container" id="u-mapContainer"></div>
-                        <div class="map-legend" id="u-mapLegend"></div>
                     </div>
                     <div class="td-card" style="--tc-color:var(--accent2)">
                         <div class="td-header">
@@ -1892,6 +1927,23 @@
                             District · TD10 % · TD16 %</div>
                         <div id="u-distTDRows"></div>
                     </div>
+                </div>
+
+                <!-- District Achievement Map — full-width dedicated panel -->
+                <div class="map-panel">
+                    <div class="map-panel-header">
+                        <div>
+                            <div class="chart-title" style="font-size:11px;margin-bottom:3px;">🗺 District Achievement Map <span class="chart-month">TD10 Coverage</span></div>
+                            <div style="font-size:8px;color:var(--muted);font-family:'Space Mono',monospace;">RAG-coded by TD10 achievement · hover for values · click district to filter</div>
+                        </div>
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--green)"></div>≥80% On Track</div>
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--amber)"></div>60–80% Attention</div>
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--red)"></div>&lt;60% Critical</div>
+                        </div>
+                    </div>
+                    <div class="map-container" id="u-mapContainer"></div>
+                    <div class="map-legend" id="u-mapLegend" style="display:none;"></div>
                 </div>
 
                 <div class="grid-2">
@@ -2069,7 +2121,7 @@
                 </div>
 
                 <div class="section-title">TD10 Achievement — HMIS</div>
-                <div class="grid-2">
+                <div class="grid-full" style="margin-bottom:13px;">
                     <div class="chart-card">
                         <div class="cc-header">
                             <div class="chart-title">🎒 TD10 Achievement <span class="chart-month"
@@ -2077,17 +2129,24 @@
                             <button class="sort-btn" onclick="toggleSortChart('hmis','td10')">⇅ Sort</button>
                         </div>
                         <div class="chart-sub">TD10 given vs monthly target · HMIS</div>
-                        <canvas id="h-td10Chart" height="200"></canvas>
+                        <canvas id="h-td10Chart" height="130"></canvas>
                     </div>
-                    <div class="map-card">
-                        <div class="td-header">
-                            <div class="td-title">🗺 HMIS TD10 Map</div><span class="chart-month">HMIS Coverage</span>
+                </div>
+                
+                <div class="map-panel">
+                    <div class="map-panel-header">
+                        <div>
+                            <div class="chart-title" style="font-size:11px;margin-bottom:3px;">🗺 HMIS TD10 District Map <span class="chart-month">HMIS Coverage</span></div>
+                            <div style="font-size:8px;color:var(--muted);font-family:'Space Mono',monospace;">District TD10 achievement from HMIS · hover for values · click to filter</div>
                         </div>
-                        <div style="font-size:8px;color:var(--muted);margin-bottom:7px;">District TD10 achievement from
-                            HMIS · click to filter</div>
-                        <div class="map-container" id="h-mapContainer"></div>
-                        <div class="map-legend" id="h-mapLegend"></div>
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--green)"></div>≥80% On Track</div>
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--amber)"></div>60–80% Attention</div>
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--red)"></div>&lt;60% Critical</div>
+                        </div>
                     </div>
+                    <div class="map-container" id="h-mapContainer"></div>
+                    <div class="map-legend" id="h-mapLegend" style="display:none;"></div>
                 </div>
 
                 <div class="section-title">Full HMIS Indicator Table</div>
@@ -2154,6 +2213,7 @@
                         <canvas id="c-ficGapChart" height="210"></canvas>
                     </div>
                 </div>
+
 
                 <div class="section-title">Hep-B Birth Dose Comparison</div>
                 <div class="grid-2" style="margin-bottom:13px;">
@@ -2228,25 +2288,32 @@
                 </div>
 
                 <div class="section-title">TD10 Achievement Comparison</div>
-                <div class="grid-2" style="margin-bottom:13px;">
+                <div class="grid-full" style="margin-bottom:13px;">
                     <div class="chart-card">
                         <div class="cc-header">
-                            <div class="chart-title">💊 TD10: HMIS vs UWIN <span class="chart-month">April 2026</span>
-                            </div>
+                            <div class="chart-title">💊 TD10: HMIS vs UWIN <span class="chart-month">April 2026</span></div>
                             <button class="sort-btn" onclick="toggleSortChart('cmp','td10')">⇅ Sort</button>
                         </div>
                         <div class="chart-sub">TD10 achievement % comparison</div>
-                        <canvas id="c-td10Chart" height="210"></canvas>
+                        <canvas id="c-td10Chart" height="130"></canvas>
                     </div>
-                    <div class="map-card">
-                        <div class="td-header">
-                            <div class="td-title">🗺 UWIN vs HMIS FIC Gap Map</div>
+                </div>
+
+                <!-- UWIN vs HMIS FIC Gap Map — full-width dedicated panel -->
+                <div class="map-panel">
+                    <div class="map-panel-header">
+                        <div>
+                            <div class="chart-title" style="font-size:11px;margin-bottom:3px;">🗺 UWIN vs HMIS FIC Gap Map</div>
+                            <div style="font-size:8px;color:var(--muted);font-family:'Space Mono',monospace;">District fill = UWIN FIC % · hover to compare HMIS vs UWIN · click to filter</div>
                         </div>
-                        <div style="font-size:8px;color:var(--muted);margin-bottom:7px;">Colour = UWIN FIC % · hover for
-                            HMIS vs UWIN comparison</div>
-                        <div class="map-container" id="c-mapContainer"></div>
-                        <div class="map-legend" id="c-mapLegend"></div>
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--green)"></div>≥80% On Track</div>
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--amber)"></div>60–80% Attention</div>
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--red)"></div>&lt;60% Critical</div>
+                        </div>
                     </div>
+                    <div class="map-container" id="c-mapContainer"></div>
+                    <div class="map-legend" id="c-mapLegend" style="display:none;"></div>
                 </div>
 
                 <div class="section-title">District-wise Comparison Summary</div>
@@ -2274,83 +2341,62 @@
     </div>
 
     <div class="page" id="page-geo">
-        <div class="layout">
-            <nav class="sidebar">
-                <div class="sidebar-title">Districts Map Filter</div>
-                <div class="sidebar-search"><input id="distSearch-geo" placeholder="Search…"
-                        oninput="filterSidebar('geo',this.value)"></div>
-                <div id="sidebarList-geo"></div>
-            </nav>
-            <div class="main">
-                <div class="health-banner fade-in" style="border-left-color:#059669">
+        <!-- Geo page: full-width, no sidebar, map fills the canvas -->
+        <div style="width:100%;display:flex;flex-direction:column;">
+            <div class="main" style="padding:16px 24px 40px;">
+                <div class="health-banner fade-in" style="border-left-color:#059669;margin-bottom:12px;">
                     <div class="banner-icon">🗺️</div>
                     <div class="banner-text">
                         <strong>Geospatial Intelligence — Uttarakhand District Coverage Map</strong>
-                        <span>District polygon fill · RAG colour-coded by selected KDI · UWIN / HMIS sources · All 13
-                            districts</span>
+                        <span>District polygon fill · RAG colour-coded by selected KDI · UWIN / HMIS sources · All 13 districts · Leader-line annotations</span>
                     </div>
                     <div class="banner-pulse" style="background:#059669"></div>
                 </div>
 
-                <!-- Controls bar -->
-                <div
-                    style="display:flex;align-items:center;gap:10px;background:var(--surface);padding:12px 18px;border-radius:11px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:14px;flex-wrap:wrap;">
-                    <div style="font-size:12px;font-weight:700;color:var(--text);font-family:'Space Mono',monospace;">
-                        🎛️ Configure Map</div>
-                    <select id="geo-source" class="geo-control-select" onchange="updateGeoMap()">
-                        <option value="UWIN">Source: UWIN</option>
-                        <option value="HMIS">Source: HMIS</option>
-                    </select>
-                    <select id="geo-kdi" class="geo-control-select" onchange="updateGeoMap()">
-                        <option value="FIC">KDI: FIC (Full Immunization)</option>
-                        <option value="HepB">KDI: Hep-B Birth Dose</option>
-                        <option value="Penta1">KDI: Penta 1</option>
-                        <option value="Penta2">KDI: Penta 2</option>
-                        <option value="Penta3">KDI: Penta 3</option>
-                        <option value="MR1">KDI: MR 1</option>
-                        <option value="MR2">KDI: MR 2</option>
-                        <option value="TD10">KDI: TD 10</option>
-                        <option value="TD16">KDI: TD 16</option>
-                        <option value="ZeroDose">KDI: Zero Dose</option>
-                        <option value="DO_P3_MR1">KDI: Dropout (Penta3→MR1)</option>
-                        <option value="DO_MR1_MR2">KDI: Dropout (MR1→MR2)</option>
-                        <option value="SDG">KDI: SDG Proxy (Penta-3)</option>
-                    </select>
-                    <span class="chart-month" id="g-lbl-source" style="margin-left:auto;">UWIN · FIC</span>
+                <!-- Controls + KDI strip in one compact row -->
+                <div style="display:flex;align-items:stretch;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);padding:12px 18px;border-radius:11px;border:1px solid var(--border);box-shadow:var(--shadow);flex-wrap:wrap;flex-shrink:0;">
+                        <div style="font-size:11px;font-weight:700;color:var(--text);font-family:'Space Mono',monospace;">🎛️ Configure</div>
+                        <select id="geo-source" class="geo-control-select" onchange="updateGeoMap()">
+                            <option value="UWIN">Source: UWIN</option>
+                            <option value="HMIS">Source: HMIS</option>
+                        </select>
+                        <select id="geo-kdi" class="geo-control-select" onchange="updateGeoMap()">
+                            <option value="FIC">KDI: FIC (Full Immunization)</option>
+                            <option value="HepB">KDI: Hep-B Birth Dose</option>
+                            <option value="Penta1">KDI: Penta 1</option>
+                            <option value="Penta2">KDI: Penta 2</option>
+                            <option value="Penta3">KDI: Penta 3</option>
+                            <option value="MR1">KDI: MR 1</option>
+                            <option value="MR2">KDI: MR 2</option>
+                            <option value="TD10">KDI: TD 10</option>
+                            <option value="TD16">KDI: TD 16</option>
+                            <option value="ZeroDose">KDI: Zero Dose</option>
+                            <option value="DO_P3_MR1">KDI: Dropout (Penta3→MR1)</option>
+                            <option value="DO_MR1_MR2">KDI: Dropout (MR1→MR2)</option>
+                            <option value="SDG">KDI: SDG Proxy (Penta-3)</option>
+                        </select>
+                        <span class="chart-month" id="g-lbl-source" style="margin-left:4px;">UWIN · FIC</span>
+                    </div>
                 </div>
 
                 <!-- KDI Summary tiles -->
                 <div class="section-title">All KDI Snapshot — <span id="g-kdi-src-lbl">UWIN · April 2026</span></div>
-                <div id="geo-kdi-strip"
-                    style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:14px;">
-                </div>
+                <div id="geo-kdi-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:14px;"></div>
 
-                <!-- Polygon map -->
-                <div class="chart-card" style="padding:15px 17px;">
-                    <div
-                        style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
-                        <div class="chart-title">🗺️ Uttarakhand — District Coverage Map <span class="chart-month"
-                                id="g-map-kdi-lbl">FIC</span></div>
-                        <div style="font-size:8px;color:var(--muted);font-family:'Space Mono',monospace;">Hover district
-                            · click to filter sidebar</div>
-                    </div>
-                    <div id="g-mapContainer"
-                        style="height:600px;border-radius:8px;overflow:hidden;border:1px solid var(--border);"></div>
-                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;justify-content:center;">
-                        <div class="map-leg-item">
-                            <div class="map-leg-dot" style="background:var(--green)"></div>≥ 80% — On Track
-                        </div>
-                        <div class="map-leg-item">
-                            <div class="map-leg-dot" style="background:var(--amber)"></div>60–80% — Attention
-                        </div>
-                        <div class="map-leg-item">
-                            <div class="map-leg-dot" style="background:var(--red)"></div>&lt; 60% — Critical
-                        </div>
-                        <div id="g-inv-legend" class="map-leg-item" style="display:none;">
-                            <div class="map-leg-dot" style="background:var(--muted);opacity:.5"></div>Inverted: lower =
-                            better
+                <!-- Full-bleed polygon map card -->
+                <div class="chart-card" style="padding:14px 16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                        <div class="chart-title" style="font-size:12px;">🗺️ Uttarakhand — District Coverage Map <span class="chart-month" id="g-map-kdi-lbl">FIC</span></div>
+                        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--green)"></div>≥ 80% On Track</div>
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--amber)"></div>60–80% Attention</div>
+                            <div class="map-leg-item"><div class="map-leg-dot" style="background:var(--red)"></div>&lt;60% Critical</div>
+                            <div id="g-inv-legend" class="map-leg-item" style="display:none;"><div class="map-leg-dot" style="background:var(--muted);opacity:.5"></div>Inverted</div>
+                            <div style="font-size:8px;color:var(--muted);font-family:'Space Mono',monospace;">Hover · click to pin all KDIs</div>
                         </div>
                     </div>
+                    <div id="g-mapContainer" class="geo-map-fullbleed"></div>
                 </div>
             </div>
         </div>
@@ -2974,12 +3020,97 @@
             return geojsonPromise;
         }
 
+        // ── SHARED LABEL POSITIONS for all 4 maps ──
+        // Perimeter labels sit just outside Uttarakhand state boundary.
+        // Tuned for full-width 520px+ map panels.
+        const SHARED_LABEL_POSITIONS = {
+            'UTTAR KASHI':        [31.63, 77.90],
+            'RUDRA PRAYAG':       [31.63, 78.90],
+            'CHAMOLI':            [31.63, 79.80],
+            'PITHORAGARH':        [30.60, 81.20],
+            'BAGESHWAR':          [29.90, 81.20],
+            'CHAMPAWAT':          [29.12, 81.20],
+            'ALMORA':             [28.26, 80.46],
+            'UDHAM SINGH NAGAR':  [28.26, 79.52],
+            'NAINITAL':           [28.26, 78.56],
+            'TEHRI GARHWAL':      [30.78, 77.18],
+            'DEHRADUN':           [30.20, 77.18],
+            'HARIDWAR':           [29.58, 77.18],
+            'PAURI GARHWAL':      [28.88, 77.18],
+        };
+
+        // Adds leader-line bubble annotations to a Leaflet map instance
+        // distMap: { UPPER_DIST_NAME: { val, pct, col, rowName } }
+        // Returns array of markers/polylines added (for cleanup)
+        function addLeaderLineAnnotations(lmap, distMap, existingLabels) {
+            // Remove old labels
+            if (existingLabels) existingLabels.forEach(m => { try { lmap.removeLayer(m); } catch(e) {} });
+            const labels = [];
+
+            Object.entries(SHARED_LABEL_POSITIONS).forEach(([distKey, outerPos]) => {
+                const d = distMap[distKey];
+                if (!d) return;
+
+                const col = d.col;
+                const pct = d.pct;
+                const rawName = d.rowName || distKey;
+                const center = d.center;
+                if (!center) return;
+
+                const bubblePos = L.latLng(outerPos[0], outerPos[1]);
+                const isTopBottom = outerPos[0] > 31.5 || outerPos[0] < 28.9;
+                const midPt = isTopBottom
+                    ? L.latLng(center.lat, bubblePos.lng)
+                    : L.latLng(bubblePos.lat, center.lng);
+
+                // 1. Glowing centroid dot
+                const dotIcon = L.divIcon({
+                    className: 'geo-district-label',
+                    html: `<div class="gdl-dot" style="width:8px;height:8px;background:${col};color:${col}"></div>`,
+                    iconSize: [8, 8], iconAnchor: [4, 4]
+                });
+                labels.push(L.marker(center, { icon: dotIcon, interactive: false, zIndexOffset: 300 }).addTo(lmap));
+
+                // 2. Two-segment elbow leader line
+                labels.push(L.polyline([center, midPt, bubblePos], {
+                    color: col, weight: 1.5, opacity: 0.82,
+                    dashArray: '6, 4', interactive: false
+                }).addTo(lmap));
+
+                // 3. Floating bubble label
+                const words = rawName.split(' ');
+                const shortLbl = words.length > 1
+                    ? words[0].slice(0, 5) + ' ' + words[1].slice(0, 4)
+                    : rawName.slice(0, 9);
+                const barW = Math.min(pct || 0, 100) * 0.48 + 10;
+                const bubbleIcon = L.divIcon({
+                    className: 'geo-district-label',
+                    html: `<div class="gdl-bubble" style="border-color:${col}">
+                        <div class="gdl-b-name">${shortLbl.toUpperCase()}</div>
+                        <div class="gdl-b-pct" style="color:${col}">${pct != null ? pct + '%' : 'N/A'}</div>
+                        <div class="gdl-bar" style="width:${barW}px;background:${col}"></div>
+                    </div>`,
+                    iconSize: [76, 46], iconAnchor: [38, 23]
+                });
+                labels.push(L.marker(bubblePos, { icon: bubbleIcon, interactive: false, zIndexOffset: 600 }).addTo(lmap));
+            });
+            return labels;
+        }
+
+        // Map-level label storage keyed by pg
+        const mapLabels = { uwin: null, hmis: null, compare: null };
+
         async function renderMap(pg, containerId, legendId) {
             if (pg === 'geo') return; // Handled separately
 
             const container = document.getElementById(containerId); if (!container) return;
             if (!leafletMaps[pg]) {
-                leafletMaps[pg] = L.map(containerId, { zoomControl: false, attributionControl: false, dragging: true, scrollWheelZoom: true, doubleClickZoom: true });
+                leafletMaps[pg] = L.map(containerId, {
+                    zoomControl: false, attributionControl: false,
+                    dragging: false, scrollWheelZoom: false,
+                    doubleClickZoom: false, boxZoom: false,
+                    keyboard: false, touchZoom: false
+                });
             }
             const lmap = leafletMaps[pg];
             if (!window.geojsonData) {
@@ -2991,12 +3122,20 @@
             }
 
             let records = pg === 'uwin' ? getUWINRecords() : getHMISRecords();
-            if (pg === 'compare') records = getHMISRecords();
+            if (pg === 'compare') records = D.records.map(computeRow); // compare uses UWIN FIC
             const distMap = {};
             records.forEach(row => {
-                const p10 = Math.min(pctOf(row.TD10_Given, row.TD10_Target), 100);
+                const p10  = Math.min(pctOf(row.TD10_Given, row.TD10_Target), 100);
                 const ficPct = row.Target_01yr ? Math.min(Math.round(row.Penta3_Given / row.Target_01yr * 100), 100) : 0;
-                distMap[row.Districts.toUpperCase().trim()] = { p10, ficPct, rowName: row.Districts, td10g: row.TD10_Given || 0, td10t: row.TD10_Target || 0 };
+                const val = pg === 'compare' ? ficPct : p10;
+                const col = getRagColor(val);
+                distMap[row.Districts.toUpperCase().trim()] = {
+                    p10, ficPct, val, col,
+                    pct: val,
+                    rowName: row.Districts,
+                    td10g: row.TD10_Given || 0,
+                    td10t: row.TD10_Target || 0
+                };
             });
 
             const nameMatch = (gn) => {
@@ -3012,14 +3151,6 @@
                 return g;
             };
 
-            function getRagFill(p) {
-                if (p === undefined || p === null) return 'var(--surface2)';
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                if (p >= 80) return isDark ? 'rgba(52,211,153,0.85)' : 'rgba(5,150,105,0.75)';
-                if (p >= 60) return isDark ? 'rgba(251,191,36,0.85)' : 'rgba(217,119,6,0.75)';
-                return isDark ? 'rgba(248,113,113,0.85)' : 'rgba(220,38,38,0.65)';
-            }
-
             if (geojsonLayers[pg]) { lmap.removeLayer(geojsonLayers[pg]); }
 
             geojsonLayers[pg] = L.geoJSON(window.geojsonData, {
@@ -3027,33 +3158,72 @@
                     const gn = feature.properties.Dist_Name || feature.properties.dtname || feature.properties.DISTRICT || feature.properties.District || feature.properties.NAME_2 || feature.properties.name || '';
                     const mn = nameMatch(gn);
                     const dData = distMap[mn];
-                    const val = pg === 'compare' ? dData?.ficPct : dData?.p10;
-                    return { fillColor: getRagFill(val), weight: 1.2, opacity: 1, color: gs('--surface') || '#fff', fillOpacity: 1 };
+                    const val = dData ? dData.pct : null;
+                    return { fillColor: getRagFill(val), weight: 1.5, opacity: 1, color: '#ffffff', fillOpacity: 1 };
                 },
                 onEachFeature: (feature, layer) => {
                     const gn = feature.properties.Dist_Name || feature.properties.dtname || feature.properties.DISTRICT || feature.properties.District || feature.properties.NAME_2 || feature.properties.name || 'Unknown';
                     const mn = nameMatch(gn);
                     const dData = distMap[mn];
-                    const val = pg === 'compare' ? dData?.ficPct : dData?.p10;
+                    const val = dData ? dData.pct : null;
                     const valStr = val != null ? val + '%' : 'N/A';
                     const rawName = dData ? dData.rowName : gn;
                     const lbl = pg === 'compare' ? 'FIC' : 'TD10';
-                    layer.bindTooltip(`<div style="text-align:center;"><b>${rawName}</b><br>${lbl}: ${valStr}${dData && pg !== 'compare' ? `<br>Given: ${fmt(dData.td10g)} | Target: ${fmt(dData.td10t)}` : ''}`, { direction: 'auto', className: 'leaflet-custom-tooltip' });
+                    const col = dData ? dData.col : gs('--muted');
+
+                    // Store centroid for leader-line annotations
+                    if (dData) {
+                        const bounds = layer.getBounds();
+                        distMap[mn].center = bounds.getCenter();
+                    }
+
+                    const tipHtml = `<div style="font-family:'Inter',sans-serif;text-align:center;padding:4px 2px">
+                        <b style="font-size:11px;color:#e8f0fe">${rawName}</b><br/>
+                        <span style="font-size:8px;color:#94a3b8;text-transform:uppercase">${lbl}</span>
+                        <div style="font-size:18px;font-weight:700;color:${col};margin-top:2px">${valStr}</div>
+                        ${dData && pg !== 'compare' ? `<div style="font-size:8px;color:#526070;margin-top:1px">${fmt(dData.td10g)} / ${fmt(dData.td10t)}</div>` : ''}
+                    </div>`;
+                    layer.bindTooltip(tipHtml, { direction: 'auto', className: 'leaflet-custom-tooltip', opacity: 0.97 });
                     layer.on({
-                        mouseover: e => { e.target.setStyle({ weight: 2.5, color: gs('--text') || '#000' }); if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) e.target.bringToFront(); },
+                        mouseover: e => { e.target.setStyle({ weight: 3, color: col }); if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) e.target.bringToFront(); },
                         mouseout: e => geojsonLayers[pg].resetStyle(e.target),
                         click: () => { if (dData) selectDistrict(pg, dData.rowName); }
                     });
                 }
             }).addTo(lmap);
 
-            setTimeout(() => { lmap.invalidateSize(); lmap.fitBounds(geojsonLayers[pg].getBounds(), { padding: [10, 10] }); }, 100);
+            setTimeout(() => {
+                lmap.invalidateSize();
+                // Fit to the full label viewport so bubbles don't get clipped
+                lmap.fitBounds([[27.70, 76.50], [32.10, 81.70]], { padding: [28, 28] });
+                // Add leader-line annotations after fitBounds settles
+                setTimeout(() => {
+                    mapLabels[pg] = addLeaderLineAnnotations(lmap, distMap, mapLabels[pg]);
+                }, 350);
+            }, 120);
 
             const legEl = document.getElementById(legendId); if (legEl) {
                 legEl.innerHTML = [
-                    { c: 'rgba(5,150,105,0.75)', l: '≥80% On Track' }, { c: 'rgba(217,119,6,0.75)', l: '60–80% Attention' }, { c: 'rgba(220,38,38,0.65)', l: '<60% Critical' }
+                    { c: getRagFill(90), l: '≥80% On Track' },
+                    { c: getRagFill(70), l: '60–80% Attention' },
+                    { c: getRagFill(40), l: '<60% Critical' }
                 ].map(i => `<div class="map-leg-item"><div class="map-leg-dot" style="background:${i.c}"></div>${i.l}</div>`).join('');
             }
+        }
+
+        // Shared RAG color helpers (same thresholds everywhere)
+        function getRagColor(p) {
+            if (p === undefined || p === null) return gs('--muted');
+            if (p >= 80) return gs('--green')  || '#5db872';
+            if (p >= 60) return gs('--amber') || '#e8a55a';
+            return gs('--red') || '#c64545';
+        }
+        function getRagFill(p) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (p === undefined || p === null) return isDark ? 'rgba(120,120,120,0.22)' : 'rgba(180,170,160,0.25)';
+            if (p >= 80) return isDark ? 'rgba(52,211,153,0.88)' : 'rgba(22,163,74,0.78)';
+            if (p >= 60) return isDark ? 'rgba(251,191,36,0.88)' : 'rgba(234,179,8,0.78)';
+            return isDark ? 'rgba(248,113,113,0.88)' : 'rgba(220,38,38,0.75)';
         }
 
 
@@ -3443,9 +3613,9 @@
             if (rag.neg) { level = pct >= rag.a ? 'red' : pct >= rag.g ? 'amber' : 'green'; }
             else { level = pct >= rag.g ? 'green' : pct >= rag.a ? 'amber' : 'red'; }
             const fills = {
-                green: isDark ? 'rgba(52,211,153,0.82)' : 'rgba(5,150,105,0.72)',
-                amber: isDark ? 'rgba(251,191,36,0.82)' : 'rgba(217,119,6,0.72)',
-                red: isDark ? 'rgba(248,113,113,0.82)' : 'rgba(220,38,38,0.72)',
+                green: isDark ? 'rgba(52,211,153,0.88)' : 'rgba(22,163,74,0.78)',
+                amber: isDark ? 'rgba(251,191,36,0.88)' : 'rgba(234,179,8,0.78)',
+                red:   isDark ? 'rgba(248,113,113,0.88)' : 'rgba(220,38,38,0.75)',
             };
             return fills[level];
         }
@@ -3568,7 +3738,7 @@
 
             // Remove old layer + labels
             if (geoMarkers._geoLayer) geoMapInstance.removeLayer(geoMarkers._geoLayer);
-            if (geoMarkers._geoLabels) geoMarkers._geoLabels.forEach(m => geoMapInstance.removeLayer(m));
+            if (geoMarkers._geoLabels) geoMarkers._geoLabels.forEach(m => { try { geoMapInstance.removeLayer(m); } catch(e) {} });
             geoMarkers._geoLabels = [];
 
             const geoLayer = L.geoJSON(window.geojsonData, {
@@ -3576,7 +3746,7 @@
                     const gn = feature.properties.Dist_Name || feature.properties.dtname || feature.properties.DISTRICT || feature.properties.District || feature.properties.NAME_2 || feature.properties.name || '';
                     const d = distMap[nameMatch(gn)];
                     const fill = d ? kdiColorFill(d.pct, kdiDef.neg, kdiId) : 'rgba(150,150,150,0.2)';
-                    return { fillColor: fill, weight: 1.5, opacity: 1, color: '#fff', fillOpacity: 1 };
+                    return { fillColor: fill, weight: 2, opacity: 1, color: '#ffffff', fillOpacity: 1 };
                 },
                 onEachFeature: (feature, layer) => {
                     const gn = feature.properties.Dist_Name || feature.properties.dtname || feature.properties.DISTRICT || feature.properties.District || feature.properties.NAME_2 || feature.properties.name || 'Unknown';
@@ -3585,29 +3755,33 @@
                     const pct = d ? d.pct : null;
                     const col = d ? kdiColor(d.pct, kdiDef.neg, kdiId) : gs('--muted');
                     const rawName = d ? d.rowName : gn;
-                    const chipCls = d ? kdiChipClass(d.pct, kdiDef.neg, kdiId) : 'red';
 
-                    // ── Hover tooltip (lightweight) ──
-                    const hoverTip = `<div style="font-family:'DM Sans',sans-serif;text-align:center;padding:4px 2px">
-                        <b style="font-size:11px;color:#e8f0fe">${rawName}</b><br/>
+                    // Store centroid for shared leader-line helper
+                    if (d) d.center = layer.getBounds().getCenter();
+                    // Also store col for shared helper
+                    if (d) d.col = col;
+
+                    // ── Hover tooltip ──
+                    const hoverTip = `<div style="font-family:'Inter',sans-serif;text-align:center;padding:6px 4px">
+                        <b style="font-size:12px;color:#e8f0fe">${rawName}</b><br/>
                         <span style="font-size:8px;color:#94a3b8;text-transform:uppercase">${kdiDef.icon} ${kdiDef.label}</span>
-                        <div style="font-size:18px;font-weight:700;color:${col};margin-top:2px">${pct != null ? pct + '%' : 'N/A'}</div>
+                        <div style="font-size:22px;font-weight:800;color:${col};margin-top:3px">${pct != null ? pct + '%' : 'N/A'}</div>
                         <div style="font-size:8px;color:#526070;margin-top:1px">${d ? fmt(d.val) + ' / ' + fmt(d.tgt) : ''}</div>
-                        <div style="font-size:7px;color:#6b8ef5;margin-top:3px">🖱 Click to pin all KDIs</div>
+                        <div style="font-size:7px;color:#6b8ef5;margin-top:4px">🖱 Click to pin all KDIs</div>
                     </div>`;
                     layer.bindTooltip(hoverTip, { className: 'leaflet-custom-tooltip', direction: 'auto', sticky: false, opacity: 0.97 });
 
                     // ── Click → freeze popup with ALL KDIs ──
                     layer.on({
                         mouseover: e => {
-                            e.target.setStyle({ weight: 3, color: gs('--accent') || '#6b8ef5' });
+                            e.target.setStyle({ weight: 3, color: col });
                             if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) e.target.bringToFront();
                         },
                         mouseout: e => geoLayer.resetStyle(e.target),
                         click: e => {
                             if (d && d.row) {
                                 const popHtml = buildDistrictPopup(d.row, source);
-                                L.popup({ className: 'geo-popup', maxWidth: 310, closeButton: true, autoClose: false, closeOnClick: false })
+                                L.popup({ className: 'geo-popup', maxWidth: 320, closeButton: true, autoClose: false, closeOnClick: false })
                                     .setLatLng(e.latlng)
                                     .setContent(popHtml)
                                     .openOn(geoMapInstance);
@@ -3615,82 +3789,20 @@
                             if (d) selectDistrict('geo', d.rowName);
                         }
                     });
-
-                    // ── Leader-line annotation: label OUTSIDE state boundary, line points IN ──
-                    const center = layer.getBounds().getCenter();
-
-                    // Absolute positions outside Uttarakhand state boundary
-                    // Perimeter ring pulled inward to fit within the 600px container viewport
-                    const LABEL_POSITIONS = {
-                        // ── TOP ROW (lat 31.55°N) ──
-                        'UTTAR KASHI': [31.55, 77.85],
-                        'RUDRA PRAYAG': [31.55, 78.88],
-                        'CHAMOLI': [31.55, 79.78],
-                        // ── RIGHT SIDE (lng 81.10°E) ──
-                        'PITHORAGARH': [30.55, 81.10],
-                        'BAGESHWAR': [29.82, 81.10],
-                        'CHAMPAWAT': [29.10, 81.10],
-                        // ── BOTTOM ROW (lat 28.35°N) ──
-                        'ALMORA': [28.35, 80.45],
-                        'UDHAM SINGH NAGAR': [28.35, 79.50],
-                        'NAINITAL': [28.35, 78.55],
-                        // ── LEFT SIDE (lng 77.30°E) ──
-                        'TEHRI GARHWAL': [30.75, 77.30],
-                        'DEHRADUN': [30.18, 77.30],
-                        'HARIDWAR': [29.55, 77.30],
-                        'PAURI GARHWAL': [28.90, 77.30],
-                    };
-
-                    const outerPos = LABEL_POSITIONS[rawName.toUpperCase()];
-                    if (!outerPos) return; // skip unknown districts
-                    const bubblePos = L.latLng(outerPos[0], outerPos[1]);
-
-                    // Elbow midpoint for 2-segment leader line (right-angle look)
-                    // Mid-lat = district centroid lat, Mid-lng = bubble lng (or vice versa)
-                    const isTopBottom = outerPos[0] > 31.5 || outerPos[0] < 28.0;
-                    const midPt = isTopBottom
-                        ? L.latLng(center.lat, bubblePos.lng)   // go horizontal first, then vertical
-                        : L.latLng(bubblePos.lat, center.lng);  // go vertical first, then horizontal
-
-                    // 1. Glowing centroid dot
-                    const dotIcon = L.divIcon({
-                        className: 'geo-district-label',
-                        html: `<div class="gdl-dot" style="width:9px;height:9px;background:${col};color:${col}"></div>`,
-                        iconSize: [9, 9], iconAnchor: [4.5, 4.5]
-                    });
-                    const dotM = L.marker(center, { icon: dotIcon, interactive: false, zIndexOffset: 300 }).addTo(geoMapInstance);
-
-                    // 2. Two-segment elbow leader line
-                    const line = L.polyline([center, midPt, bubblePos], {
-                        color: col, weight: 1.5, opacity: 0.80,
-                        dashArray: '6, 4', interactive: false
-                    }).addTo(geoMapInstance);
-
-                    // 3. Outer bubble label
-                    const words = rawName.split(' ');
-                    const shortLbl = words.length > 1
-                        ? words[0].slice(0, 5) + ' ' + words[1].slice(0, 4)
-                        : rawName.slice(0, 9);
-                    const barW = Math.min(pct || 0, 100) * 0.50 + 12;
-                    const bubbleIcon = L.divIcon({
-                        className: 'geo-district-label',
-                        html: `<div class="gdl-bubble" style="border-color:${col}">
-                            <div class="gdl-b-name">${shortLbl.toUpperCase()}</div>
-                            <div class="gdl-b-pct" style="color:${col}">${pct != null ? pct + '%' : 'N/A'}</div>
-                            <div style="font-size:6px;color:#526070;font-family:'Space Mono',monospace;margin-top:1px">${d ? fmt(d.val) + '/' + fmt(d.tgt) : ''}</div>
-                            <div class="gdl-bar" style="width:${barW}px;background:${col}"></div>
-                        </div>`,
-                        iconSize: [82, 52], iconAnchor: [41, 26]
-                    });
-                    const bubM = L.marker(bubblePos, { icon: bubbleIcon, interactive: false, zIndexOffset: 600 }).addTo(geoMapInstance);
-
-                    geoMarkers._geoLabels.push(dotM, line, bubM);
                 }
             }).addTo(geoMapInstance);
 
             geoMarkers._geoLayer = geoLayer;
-            // Tightly fit all outer labels + state in a single clean screenshot view
-            setTimeout(() => { geoMapInstance.invalidateSize(); geoMapInstance.fitBounds([[27.95, 76.80], [31.92, 81.52]], { padding: [40, 40] }); }, 120);
+
+            // Fit bounds first, then render leader-line annotations
+            setTimeout(() => {
+                geoMapInstance.invalidateSize();
+                geoMapInstance.fitBounds([[27.70, 76.50], [32.10, 81.70]], { padding: [22, 22] });
+                // Use shared helper with geo-specific distMap
+                setTimeout(() => {
+                    geoMarkers._geoLabels = addLeaderLineAnnotations(geoMapInstance, distMap, geoMarkers._geoLabels);
+                }, 350);
+            }, 120);
         }
 
         function renderGeoKDIStrip(allRecs, source) {
